@@ -117,4 +117,82 @@
 			} );
 		} );
 	}
+
+	// --- Storage self-test + archive list (PR2) ---
+	var testStorageBtn = document.getElementById( 'rdbk-test-storage' );
+	var storageMsg = document.getElementById( 'rdbk-storage-msg' );
+	var archivesBody = document.getElementById( 'rdbk-archives-body' );
+
+	function esc( s ) {
+		var d = document.createElement( 'div' );
+		d.textContent = ( null === s || undefined === s ) ? '' : String( s );
+		return d.innerHTML;
+	}
+
+	function renderArchives( items ) {
+		if ( ! archivesBody ) {
+			return;
+		}
+		if ( ! items || ! items.length ) {
+			archivesBody.innerHTML = '<tr class="rdbk-archives__empty"><td colspan="4">' + esc( i18n.noArchives || 'No archives yet.' ) + '</td></tr>';
+			return;
+		}
+		var html = '';
+		items.forEach( function ( it ) {
+			html += '<tr><td><code>' + esc( it.name ) + '</code></td>' +
+				'<td>' + esc( it.sizeh ) + '</td>' +
+				'<td>' + esc( it.dateh ) + '</td>' +
+				'<td><a class="button button-small" href="' + esc( it.url ) + '">' + esc( i18n.download || 'Download' ) + '</a> ' +
+				'<button type="button" class="button button-small button-link-delete rdbk-del" data-file="' + esc( it.name ) + '">' + esc( i18n.del || 'Delete' ) + '</button></td></tr>';
+		} );
+		archivesBody.innerHTML = html;
+	}
+
+	if ( testStorageBtn ) {
+		testStorageBtn.addEventListener( 'click', function () {
+			testStorageBtn.disabled = true;
+			if ( storageMsg ) {
+				storageMsg.textContent = i18n.working || 'Working…';
+			}
+			post( 'rdbk_test_storage' ).then( function ( r ) {
+				testStorageBtn.disabled = false;
+				if ( r && r.success ) {
+					if ( storageMsg ) {
+						storageMsg.textContent = ( r.data && r.data.message ) || '';
+					}
+					renderArchives( r.data && r.data.items );
+				} else if ( storageMsg ) {
+					storageMsg.textContent = ( r && r.data && r.data.message ) || i18n.failed || 'Failed.';
+				}
+			} ).catch( function () {
+				testStorageBtn.disabled = false;
+				if ( storageMsg ) {
+					storageMsg.textContent = i18n.failed || 'Failed.';
+				}
+			} );
+		} );
+	}
+
+	if ( archivesBody ) {
+		archivesBody.addEventListener( 'click', function ( e ) {
+			var btn = e.target.closest( '.rdbk-del' );
+			if ( ! btn ) {
+				return;
+			}
+			if ( ! window.confirm( i18n.confirmDel || 'Delete this file?' ) ) {
+				return;
+			}
+			var body = new FormData();
+			body.append( 'action', 'rdbk_delete_archive' );
+			body.append( 'nonce', cfg.nonce );
+			body.append( 'file', btn.getAttribute( 'data-file' ) );
+			fetch( cfg.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: body } ).then( function ( r ) {
+				return r.json();
+			} ).then( function ( r ) {
+				if ( r && r.success ) {
+					renderArchives( r.data && r.data.items );
+				}
+			} );
+		} );
+	}
 } )();

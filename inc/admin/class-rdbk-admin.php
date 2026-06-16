@@ -75,11 +75,15 @@ class RDBK_Admin {
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'nonce'   => wp_create_nonce( 'rdbk_runner' ),
 				'i18n'    => array(
-					'starting'  => __( 'Starting…', 'rd-backup' ),
-					'working'   => __( 'Working…', 'rd-backup' ),
-					'done'      => __( 'Done!', 'rd-backup' ),
-					'cancelled' => __( 'Cancelled.', 'rd-backup' ),
-					'failed'    => __( 'Failed. Check the logs.', 'rd-backup' ),
+					'starting'   => __( 'Starting…', 'rd-backup' ),
+					'working'    => __( 'Working…', 'rd-backup' ),
+					'done'       => __( 'Done!', 'rd-backup' ),
+					'cancelled'  => __( 'Cancelled.', 'rd-backup' ),
+					'failed'     => __( 'Failed. Check the logs.', 'rd-backup' ),
+					'noArchives' => __( 'No archives yet.', 'rd-backup' ),
+					'download'   => __( 'Download', 'rd-backup' ),
+					'del'        => __( 'Delete', 'rd-backup' ),
+					'confirmDel' => __( 'Delete this file?', 'rd-backup' ),
 				),
 			)
 		);
@@ -161,7 +165,64 @@ class RDBK_Admin {
 				<p class="rdbk-progress__status" id="rdbk-progress-status" aria-live="polite"></p>
 			</div>
 		</div>
+
+		<hr>
+
+		<h2><?php esc_html_e( 'Backup store', 'rd-backup' ); ?></h2>
+		<p class="description">
+			<?php
+			printf(
+				/* translators: %s: absolute path to the store directory */
+				esc_html__( 'Backups are stored in %s — outside the plugin and outside uploads. Files carry a random token and are only downloadable through an authenticated handler, never a direct URL.', 'rd-backup' ),
+				'<code>' . esc_html( RDBK_Storage::instance()->dir() ) . '</code>'
+			);
+			?>
+		</p>
+
+		<p>
+			<button type="button" class="button" id="rdbk-test-storage"><?php esc_html_e( 'Test storage', 'rd-backup' ); ?></button>
+			<span id="rdbk-storage-msg" class="rdbk-inline-msg" aria-live="polite"></span>
+		</p>
+
+		<table class="widefat striped rdbk-archives">
+			<thead>
+				<tr>
+					<th><?php esc_html_e( 'File', 'rd-backup' ); ?></th>
+					<th><?php esc_html_e( 'Size', 'rd-backup' ); ?></th>
+					<th><?php esc_html_e( 'Date', 'rd-backup' ); ?></th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody id="rdbk-archives-body">
+				<?php $this->render_archive_rows( RDBK_Storage::instance()->list_archives() ); ?>
+			</tbody>
+		</table>
+
+		<h3><?php esc_html_e( 'Optional — nginx deny rule', 'rd-backup' ); ?></h3>
+		<p class="description">
+			<?php esc_html_e( 'Defense in depth for nginx (including nginx-in-front setups like HestiaCP, where the .htaccess can be bypassed). Add this to the site config:', 'rd-backup' ); ?>
+		</p>
+		<pre class="rdbk-snippet"><?php echo esc_html( RDBK_Storage::instance()->nginx_rule() ); ?></pre>
 		<?php
+	}
+
+	private function render_archive_rows( array $items ): void {
+		if ( empty( $items ) ) {
+			echo '<tr class="rdbk-archives__empty"><td colspan="4">' . esc_html__( 'No archives yet.', 'rd-backup' ) . '</td></tr>';
+			return;
+		}
+		foreach ( $items as $item ) {
+			printf(
+				'<tr><td><code>%1$s</code></td><td>%2$s</td><td>%3$s</td><td><a class="button button-small" href="%4$s">%5$s</a> <button type="button" class="button button-small button-link-delete rdbk-del" data-file="%6$s">%7$s</button></td></tr>',
+				esc_html( $item['name'] ),
+				esc_html( $item['sizeh'] ),
+				esc_html( $item['dateh'] ),
+				esc_url( $item['url'] ),
+				esc_html__( 'Download', 'rd-backup' ),
+				esc_attr( $item['name'] ),
+				esc_html__( 'Delete', 'rd-backup' )
+			);
+		}
 	}
 
 	private function render_placeholder( string $title ): void {

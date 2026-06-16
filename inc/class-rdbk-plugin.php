@@ -30,6 +30,7 @@ class RDBK_Plugin {
 		// The runner registers admin-ajax endpoints — needed in the admin-ajax
 		// context (where is_admin() is true), so it loads unconditionally.
 		RDBK_Runner::instance();
+		RDBK_Storage::instance();
 
 		if ( is_admin() ) {
 			RDBK_Admin::instance();

@@ -57,6 +57,18 @@ class RDBK_Healthcheck {
 			'hint'   => self::server_hint( $server ),
 		);
 
+		$store = RDBK_Storage::instance();
+		$store->ensure_dir();
+		$st       = $store->status();
+		$checks[] = array(
+			'label'  => __( 'Backup store', 'rd-backup' ),
+			'status' => $st['protected'] ? 'ok' : ( $st['exists'] ? 'warn' : 'fail' ),
+			'value'  => $st['exists']
+				? ( $st['protected'] ? __( 'ready & protected', 'rd-backup' ) : __( 'exists (unprotected)', 'rd-backup' ) )
+				: __( 'missing', 'rd-backup' ),
+			'hint'   => $st['dir'],
+		);
+
 		return $checks;
 	}
 

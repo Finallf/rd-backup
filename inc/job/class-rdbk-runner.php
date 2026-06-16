@@ -35,6 +35,8 @@ class RDBK_Runner {
 		add_action( 'wp_ajax_rdbk_start', array( $this, 'ajax_start' ) );
 		add_action( 'wp_ajax_rdbk_step', array( $this, 'ajax_step' ) );
 		add_action( 'wp_ajax_rdbk_cancel', array( $this, 'ajax_cancel' ) );
+		add_action( 'wp_ajax_rdbk_test_storage', array( $this, 'ajax_test_storage' ) );
+		add_action( 'wp_ajax_rdbk_delete_archive', array( $this, 'ajax_delete_archive' ) );
 	}
 
 	/**
@@ -92,6 +94,36 @@ class RDBK_Runner {
 			$job->clear();
 		}
 		wp_send_json_success( array( 'status' => 'cancelled' ) );
+	}
+
+	public function ajax_test_storage(): void {
+		$this->guard();
+
+		$storage = RDBK_Storage::instance();
+		$name    = $storage->write_test_file();
+		if ( '' === $name ) {
+			wp_send_json_error( array( 'message' => __( 'Could not write the test archive (is ZipArchive available and the store writable?).', 'rd-backup' ) ), 500 );
+		}
+
+		wp_send_json_success(
+			array(
+				'message' => __( 'Test archive written to the store.', 'rd-backup' ),
+				'items'   => $storage->list_archives(),
+			)
+		);
+	}
+
+	public function ajax_delete_archive(): void {
+		$this->guard();
+
+		// sanitize_text_field (not sanitize_file_name, which mangles dotted hosts); resolve_safe() does the path validation.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified in guard() (check_ajax_referer) before any input is read.
+		$name = isset( $_POST['file'] ) ? sanitize_text_field( wp_unslash( $_POST['file'] ) ) : '';
+		if ( ! RDBK_Storage::instance()->delete( $name ) ) {
+			wp_send_json_error( array( 'message' => __( 'File not found.', 'rd-backup' ) ), 404 );
+		}
+
+		wp_send_json_success( array( 'items' => RDBK_Storage::instance()->list_archives() ) );
 	}
 
 	/**

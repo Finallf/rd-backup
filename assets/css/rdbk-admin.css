@@ -56,3 +56,22 @@
 	background: #fcebec;
 	color: #b32d2e;
 }
+
+.rdbk-inline-msg {
+	margin-left: 10px;
+	color: #50575e;
+}
+
+.rdbk-archives {
+	margin-top: 12px;
+}
+
+.rdbk-snippet {
+	max-width: 520px;
+	margin-top: 4px;
+	padding: 12px 14px;
+	background: #2b2d31;
+	color: #e7e9ea;
+	border-radius: 4px;
+	overflow: auto;
+}
