@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.0.0-beta.2](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.1...v1.0.0-beta.2) (2026-06-16)
+
+### ✨ Features
+
+* **storage:** secure backup store — token names + PHP-only download ([7b9302c](https://github.com/Finallf/rd-backup/commit/7b9302cbbcb379b925f07a9d11989ca38b0f52f0))
+
+<br>
+
+---
+
 ## 1.0.0-beta.1 (2026-06-16)
 
 ### ✨ Features
