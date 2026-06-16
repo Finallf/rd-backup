@@ -24,8 +24,14 @@ define( 'RDBK_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'RDBK_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
 /*
- * Engine bootstrap (admin UI, backup/restore engine, environment health-check,
- * GitHub auto-updater) gets wired here after the architecture design is
- * approved. Kept intentionally minimal for now so the plugin is installable,
- * activatable, and passes CI from commit zero.
+ * Module bootstrap. Engine classes live in inc/; the orchestrator wires the
+ * admin UI, the resumable job runner and the environment health-check. Backup,
+ * restore, storage and the auto-updater land in the following releases.
  */
+require_once RDBK_PLUGIN_DIR . 'inc/job/class-rdbk-job.php';
+require_once RDBK_PLUGIN_DIR . 'inc/job/class-rdbk-runner.php';
+require_once RDBK_PLUGIN_DIR . 'inc/admin/class-rdbk-healthcheck.php';
+require_once RDBK_PLUGIN_DIR . 'inc/admin/class-rdbk-admin.php';
+require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-plugin.php';
+
+add_action( 'plugins_loaded', array( 'RDBK_Plugin', 'instance' ) );

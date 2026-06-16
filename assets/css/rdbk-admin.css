@@ -1,0 +1,58 @@
+/* RD Backup — admin UI (scaffold). */
+
+.rdbk-tab-content {
+	margin-top: 16px;
+	max-width: 900px;
+}
+
+.rdbk-runner {
+	margin-top: 12px;
+}
+
+.rdbk-progress {
+	margin-top: 16px;
+}
+
+.rdbk-progress__track {
+	width: 100%;
+	height: 18px;
+	background: #e2e4e7;
+	border-radius: 4px;
+	overflow: hidden;
+}
+
+.rdbk-progress__bar {
+	width: 0;
+	height: 100%;
+	background: #2271b1;
+	transition: width 0.25s ease;
+}
+
+.rdbk-progress__status {
+	margin: 8px 0 0;
+	color: #50575e;
+}
+
+.rdbk-health .rdbk-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	border-radius: 3px;
+}
+
+.rdbk-badge--ok {
+	background: #edfaef;
+	color: #1a7f37;
+}
+
+.rdbk-badge--warn {
+	background: #fcf3e3;
+	color: #8a6d1b;
+}
+
+.rdbk-badge--fail {
+	background: #fcebec;
+	color: #b32d2e;
+}
