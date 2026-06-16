@@ -1,0 +1,15 @@
+# Auto-detecta arquivos de texto e normaliza pra LF no repo
+* text=auto eol=lf
+
+# Marca arquivos binários explicitamente (sem normalização, sem diff)
+*.png binary
+*.webp binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.zip binary
+*.pdf binary

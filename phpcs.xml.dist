@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<ruleset name="RD Backup">
+    <description>
+        Coding standards do plugin RD Backup — base WordPress (Core + Extra + Docs) +
+        PHPCompatibilityWP. Rodado localmente via `composer phpcs` e no CI via
+        `.github/workflows/smoke-test.yml` (job "PHPCS + WPCS Lint").
+    </description>
+
+    <!-- ============================================================
+         Escopo: o que entra na análise
+         ============================================================ -->
+
+    <file>.</file>
+    <arg name="extensions" value="php"/>
+
+    <!-- Exclusões -->
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+    <exclude-pattern>*/languages/*</exclude-pattern>
+    <exclude-pattern>*/staging/*</exclude-pattern>
+
+    <!-- ============================================================
+         Configuração de execução
+         ============================================================ -->
+
+    <arg name="basepath" value="."/>
+    <arg name="colors"/>
+    <arg name="parallel" value="8"/>
+    <arg value="sp"/>
+
+    <!-- ============================================================
+         Standards aplicados
+         ============================================================ -->
+
+    <rule ref="WordPress">
+        <!-- Yoda conditions: `===` universal já cobre o objetivo de segurança. -->
+        <exclude name="WordPress.PHP.YodaConditions.NotYoda"/>
+
+        <!--
+            Docblocks "manuais" e file comments não obrigatórios — distribuição via
+            GitHub Releases (sem reviewer wp.org). Exclusões permanentes, espelham o tema.
+        -->
+        <exclude name="Squiz.Commenting.FunctionComment.Missing"/>
+        <exclude name="Squiz.Commenting.FunctionComment.MissingParamTag"/>
+        <exclude name="Squiz.Commenting.FunctionComment.MissingParamComment"/>
+        <exclude name="Squiz.Commenting.InlineComment.InvalidEndChar"/>
+        <exclude name="Squiz.Commenting.BlockComment.CloserSameLine"/>
+        <exclude name="Squiz.Commenting.FunctionComment.ParamCommentFullStop"/>
+        <exclude name="Squiz.Commenting.FileComment"/>
+    </rule>
+
+    <!-- Compatibilidade PHP — checa se features usadas batem com Requires PHP -->
+    <rule ref="PHPCompatibilityWP"/>
+
+    <!-- ============================================================
+         Configurações específicas do plugin
+         ============================================================ -->
+
+    <config name="minimum_supported_wp_version" value="6.0"/>
+    <config name="testVersion" value="8.0-"/>
+
+    <!-- Text domain único do plugin -->
+    <rule ref="WordPress.WP.I18n">
+        <properties>
+            <property name="text_domain" type="array">
+                <element value="rd-backup"/>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- Prefixos válidos pra globais do plugin (rdbk = 4 chars, passa o ShortPrefix) -->
+    <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+        <properties>
+            <property name="prefixes" type="array">
+                <element value="rdbk"/>
+                <element value="RDBK"/>
+            </property>
+        </properties>
+    </rule>
+</ruleset>

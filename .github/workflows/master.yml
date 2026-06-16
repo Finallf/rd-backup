@@ -1,0 +1,95 @@
+name: Release & Package
+
+on:
+  push:
+    branches:
+      - master
+      - beta
+
+# Resolves Node.js version 24 warnings for the entire workflow.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+# Anti-loop: the release commit (chore(release): …) is pushed with GH_PAT and
+# would re-trigger this workflow. We skip these jobs when the pushed commit IS a
+# release commit. Smoke Test still runs on the SHA, giving it its green check.
+jobs:
+  # JOB 1: Update the contributors list in the README
+  contrib-readme-job:
+    if: "!startsWith(github.event.head_commit.message, 'chore(release):')"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+      - uses: akhilmhdh/contributors-readme-action@v2.3.11
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        with:
+          image_size: 80
+          use_username: true
+          collaborators: all
+          auto_detect_branch_protection: false
+
+  # JOB 2: Release & Package
+  release:
+    if: "!startsWith(github.event.head_commit.message, 'chore(release):')"
+    needs: contrib-readme-job
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Semantic Release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          extra_plugins: |
+            @semantic-release/exec
+            @semantic-release/changelog
+            @semantic-release/git
+            conventional-changelog-conventionalcommits
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+
+      - name: Build plugin zip
+        if: steps.semantic.outputs.new_release_published == 'true'
+        run: |
+          mkdir -p staging/rd-backup
+          rsync -a \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='.vscode' \
+            --exclude='.gitignore' \
+            --exclude='.gitattributes' \
+            --exclude='.editorconfig' \
+            --exclude='.releaserc' \
+            --exclude='staging' \
+            --exclude='tools' \
+            --exclude='vendor' \
+            --exclude='phpcs.xml.dist' \
+            --exclude='composer.json' \
+            --exclude='composer.lock' \
+            ./ staging/rd-backup/
+          # Shipped plugin folder = rd-backup/. README.md + CHANGELOG.md are kept
+          # inside the zip on purpose (same as the theme). JS minify will be added
+          # here once the plugin grows an assets/js/ build.
+          (cd staging && zip -r ../rd-backup.zip rd-backup)
+
+      - name: Upload plugin zip to release
+        if: steps.semantic.outputs.new_release_published == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: rd-backup.zip
+          tag_name: v${{ steps.semantic.outputs.new_release_version }}
+          token: ${{ secrets.GH_PAT }}

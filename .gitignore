@@ -1,0 +1,51 @@
+# === Dependências e cache ===
+node_modules/
+
+# vendor/ é exclusivamente Composer (PHPCS/WPCS dev). Não é distribuído no zip.
+vendor/
+
+# === Editor / IDE ===
+.claude/
+.vscode/*
+.gemini/
+*.code-workspace
+.idea/
+CLAUDE.md
+
+# Re-inclui apenas os arquivos que devem ser versionados
+!.vscode/settings.json
+!.vscode/extensions.json
+
+# === Sistema operacional ===
+Thumbs.db
+ehthumbs.db
+desktop.ini
+.DS_Store
+
+# === Sensível ===
+# .vscode/sftp.json (credencial do SFTP de teste) cai no .vscode/* acima — fica FORA do repo.
+.env
+.env.*
+*.pem
+*.key
+
+# === Backup / temporário ===
+*.bak
+*.swp
+*~
+*.log
+
+# === Logs WP/PHP ===
+debug.log
+error_log
+
+# === Build / empacotamento (gerado no CI) ===
+staging/
+rd-backup.zip
+
+# === Tooling local (não distribuído) ===
+# WP-CLI binary opcional pra rodar `wp i18n make-pot`, etc. localmente.
+tools/wp-cli.phar
+
+# === Working files (scratch local) ===
+tmp/

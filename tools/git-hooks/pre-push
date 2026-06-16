@@ -1,0 +1,38 @@
+#!/bin/sh
+# ============================================================================
+# tools/git-hooks/pre-push — local replica of .github/workflows/smoke-test.yml
+# ----------------------------------------------------------------------------
+# Blocks the push when anything that would fail CI is detected. Born after a
+# string of red pushes where the local check was weaker than the CI (or its
+# output got swallowed by pipes).
+#
+# One-time activation (per clone):
+#   git config core.hooksPath tools/git-hooks
+#
+# Bypass for emergencies (NOT recommended): git push --no-verify
+# ============================================================================
+set -e
+
+echo "[pre-push] PHP syntax sweep (same as CI job 1)..."
+ERRORS=0
+for file in $(git ls-files '*.php'); do
+    if ! php -l "$file" > /dev/null 2>&1; then
+        echo "[pre-push] SYNTAX ERROR: $file"
+        php -l "$file" || true
+        ERRORS=$((ERRORS + 1))
+    fi
+done
+if [ "$ERRORS" -gt 0 ]; then
+    echo "[pre-push] ❌ $ERRORS file(s) with syntax errors — push blocked."
+    exit 1
+fi
+
+echo "[pre-push] PHPCS full sweep (same as CI job 2)..."
+# No pipes that could swallow output; exit code decides. Warnings also fail
+# (phpcs.xml.dist has no ignore_warnings_on_exit — mirrors CI behavior).
+if ! php vendor/bin/phpcs -q; then
+    echo "[pre-push] ❌ PHPCS found violations — push blocked. Run: php vendor/bin/phpcs"
+    exit 1
+fi
+
+echo "[pre-push] ✅ All green — pushing."

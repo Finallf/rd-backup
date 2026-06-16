@@ -1,0 +1,49 @@
+{
+  "branches": [
+    "master",
+    { "name": "beta", "prerelease": true }
+  ],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "preset": "conventionalcommits",
+        "presetConfig": {
+          "types": [
+            {"type": "feat", "section": "✨ Features", "hidden": false},
+            {"type": "fix", "section": "🐛 Bug Fixes", "hidden": false},
+            {"type": "refactor", "section": "♻️ Code Refactoring", "hidden": false},
+            {"type": "docs", "section": "📝 Documentation", "hidden": false},
+            {"type": "perf", "section": "⚡ Performance Improvements", "hidden": false},
+            {"type": "chore", "hidden": true}
+          ]
+        },
+        "writerOpts": {
+          "footerPartial": "\n<br>\n\n---\n\n"
+        }
+      }
+    ],
+    [
+      "@semantic-release/changelog",
+      {
+        "changelogFile": "CHANGELOG.md",
+        "changelogTitle": "# Changelog\n\nAll notable changes to the RD Backup plugin will be documented in this file.<br>\nThe format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).<br>\n\n---\n<br>\n"
+      }
+    ],
+    [
+      "@semantic-release/exec",
+      {
+        "prepareCmd": "sed -i \"s/^ \\* Version: .*/ * Version: ${nextRelease.version}/\" rd-backup.php && sed -i \"s/^define( 'RDBK_VERSION', '.*' );/define( 'RDBK_VERSION', '${nextRelease.version}' );/\" rd-backup.php"
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": ["CHANGELOG.md", "rd-backup.php"],
+        "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}"
+      }
+    ],
+    "@semantic-release/github"
+  ]
+}
