@@ -14,11 +14,7 @@
 	var runBtn = document.getElementById( 'rdbk-test-run' );
 	var cancelBtn = document.getElementById( 'rdbk-test-cancel' );
 
-	if ( ! wrap || ! runBtn ) {
-		return;
-	}
-
-	var progress = wrap.querySelector( '.rdbk-progress' );
+	var progress = wrap ? wrap.querySelector( '.rdbk-progress' ) : null;
 	var bar = document.getElementById( 'rdbk-progress-bar' );
 	var status = document.getElementById( 'rdbk-progress-status' );
 	var running = false;
@@ -88,7 +84,7 @@
 		} );
 	}
 
-	runBtn.addEventListener( 'click', function () {
+	runBtn && runBtn.addEventListener( 'click', function () {
 		if ( running ) {
 			return;
 		}
@@ -392,6 +388,95 @@
 				bkLoop();
 			} ).catch( function () {
 				bkFinish( i18n.failed || 'Failed.' );
+			} );
+		} );
+	}
+
+	// --- Restore preview (PR5, read-only) ---
+	var previewBox = document.getElementById( 'rdbk-preview' );
+	var restoreList = document.querySelector( '.rdbk-restore-list' );
+
+	function fmtBytes( n ) {
+		n = Number( n ) || 0;
+		if ( n < 1024 ) {
+			return n + ' B';
+		}
+		var units = [ 'KB', 'MB', 'GB', 'TB' ];
+		var i = -1;
+		do {
+			n /= 1024;
+			i++;
+		} while ( n >= 1024 && i < units.length - 1 );
+		return n.toFixed( 1 ) + ' ' + units[ i ];
+	}
+
+	function integrityBadge( v ) {
+		if ( true === v ) {
+			return '<span class="rdbk-badge rdbk-badge--ok">' + esc( i18n.intOk || 'verified' ) + '</span>';
+		}
+		if ( false === v ) {
+			return '<span class="rdbk-badge rdbk-badge--fail">' + esc( i18n.intFail || 'FAILED' ) + '</span>';
+		}
+		return '<span class="rdbk-badge rdbk-badge--warn">' + esc( i18n.intUnknown || 'unknown' ) + '</span>';
+	}
+
+	function renderPreview( d ) {
+		if ( ! previewBox ) {
+			return;
+		}
+		previewBox.hidden = false;
+
+		if ( ! d || ! d.ok ) {
+			previewBox.innerHTML = '<div class="notice notice-error inline"><p>' + esc( ( d && d.error ) || i18n.failed || 'Failed.' ) + '</p></div>';
+			return;
+		}
+
+		var m = d.manifest || {};
+		var site = m.site || {};
+		var env = m.environment || {};
+		var db = m.database || {};
+		var up = m.uploads || {};
+
+		var warns;
+		if ( d.warnings && d.warnings.length ) {
+			warns = '<ul class="rdbk-warn-list">';
+			d.warnings.forEach( function ( w ) {
+				warns += '<li>' + esc( w ) + '</li>';
+			} );
+			warns += '</ul>';
+		} else {
+			warns = '<p>' + esc( i18n.noWarnings || 'No compatibility warnings.' ) + '</p>';
+		}
+
+		var contents = ( db.table_count || 0 ) + ' tables, ' + ( db.rows || 0 ) + ' rows · ' +
+			( up.files || 0 ) + ' files (' + fmtBytes( up.bytes || 0 ) + ')';
+
+		previewBox.innerHTML =
+			'<h3><code>' + esc( d.file || '' ) + '</code></h3>' +
+			'<table class="widefat striped"><tbody>' +
+			'<tr><td>' + esc( i18n.origin || 'Origin' ) + '</td><td>' + esc( site.home_url || '' ) + '</td></tr>' +
+			'<tr><td>' + esc( i18n.created || 'Created' ) + '</td><td>' + esc( m.created_at || '' ) + '</td></tr>' +
+			'<tr><td>WordPress / PHP</td><td>' + esc( ( env.wp_version || '?' ) + ' / ' + ( env.php_version || '?' ) ) + '</td></tr>' +
+			'<tr><td>' + esc( i18n.contents || 'Contents' ) + '</td><td>' + esc( contents ) + '</td></tr>' +
+			'<tr><td>' + esc( i18n.integrity || 'Integrity' ) + '</td><td>' + integrityBadge( d.integrity ) + '</td></tr>' +
+			'</tbody></table>' +
+			'<h4>' + esc( i18n.warningsLbl || 'Warnings' ) + '</h4>' + warns;
+	}
+
+	if ( restoreList ) {
+		restoreList.addEventListener( 'click', function ( e ) {
+			var btn = e.target.closest( '.rdbk-preview-btn' );
+			if ( ! btn ) {
+				return;
+			}
+			if ( previewBox ) {
+				previewBox.hidden = false;
+				previewBox.innerHTML = '<p>' + esc( i18n.previewing || 'Reading…' ) + '</p>';
+			}
+			post( 'rdbk_preview', { file: btn.getAttribute( 'data-file' ) } ).then( function ( r ) {
+				renderPreview( r && r.data );
+			} ).catch( function () {
+				renderPreview( null );
 			} );
 		} );
 	}

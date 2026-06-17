@@ -37,6 +37,7 @@ class RDBK_Runner {
 		add_action( 'wp_ajax_rdbk_cancel', array( $this, 'ajax_cancel' ) );
 		add_action( 'wp_ajax_rdbk_test_storage', array( $this, 'ajax_test_storage' ) );
 		add_action( 'wp_ajax_rdbk_delete_archive', array( $this, 'ajax_delete_archive' ) );
+		add_action( 'wp_ajax_rdbk_preview', array( $this, 'ajax_preview' ) );
 	}
 
 	/**
@@ -199,6 +200,16 @@ class RDBK_Runner {
 		}
 
 		wp_send_json_success( array( 'items' => RDBK_Storage::instance()->list_archives() ) );
+	}
+
+	/**
+	 * Read-only restore preview: validates an archive and returns its manifest.
+	 */
+	public function ajax_preview(): void {
+		$this->guard();
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified in guard() before this runs.
+		$name = isset( $_POST['file'] ) ? sanitize_text_field( wp_unslash( $_POST['file'] ) ) : '';
+		wp_send_json_success( RDBK_Restore::instance()->inspect( $name ) );
 	}
 
 	/**

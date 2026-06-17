@@ -89,6 +89,16 @@ class RDBK_Admin {
 					'rows'        => __( 'rows', 'rd-backup' ),
 					'downloadSql' => __( 'Download database.sql', 'rd-backup' ),
 					'backupDone'  => __( 'Backup created:', 'rd-backup' ),
+					'previewing'  => __( 'Reading archive…', 'rd-backup' ),
+					'origin'      => __( 'Origin', 'rd-backup' ),
+					'created'     => __( 'Created', 'rd-backup' ),
+					'contents'    => __( 'Contents', 'rd-backup' ),
+					'integrity'   => __( 'Integrity', 'rd-backup' ),
+					'intOk'       => __( 'verified', 'rd-backup' ),
+					'intFail'     => __( 'FAILED — archive may be corrupt', 'rd-backup' ),
+					'intUnknown'  => __( 'no hash in manifest', 'rd-backup' ),
+					'warningsLbl' => __( 'Warnings', 'rd-backup' ),
+					'noWarnings'  => __( 'No compatibility warnings.', 'rd-backup' ),
 				),
 			)
 		);
@@ -138,7 +148,7 @@ class RDBK_Admin {
 				$this->render_health();
 				break;
 			case 'restore':
-				$this->render_placeholder( __( 'Restore', 'rd-backup' ) );
+				$this->render_restore();
 				break;
 			default:
 				$this->render_backup();
@@ -268,14 +278,41 @@ class RDBK_Admin {
 		}
 	}
 
-	private function render_placeholder( string $title ): void {
-		echo '<p class="description">';
-		printf(
-			/* translators: %s: section name */
-			esc_html__( '%s will be available in an upcoming release.', 'rd-backup' ),
-			esc_html( $title )
-		);
-		echo '</p>';
+	private function render_restore(): void {
+		$archives = RDBK_Storage::instance()->list_archives();
+		?>
+		<h2><?php esc_html_e( 'Restore from a backup', 'rd-backup' ); ?></h2>
+		<p class="description">
+			<?php esc_html_e( 'Select a backup to inspect it. This is read-only: it validates the archive and previews what a restore would do — nothing is changed. To restore a backup from another site, drop its .zip into the store via SFTP and it shows up here.', 'rd-backup' ); ?>
+		</p>
+
+		<table class="widefat striped rdbk-restore-list">
+			<thead>
+				<tr>
+					<th><?php esc_html_e( 'Backup', 'rd-backup' ); ?></th>
+					<th><?php esc_html_e( 'Size', 'rd-backup' ); ?></th>
+					<th><?php esc_html_e( 'Date', 'rd-backup' ); ?></th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php if ( empty( $archives ) ) : ?>
+					<tr><td colspan="4"><?php esc_html_e( 'No backups in the store yet — create one in the Backup tab, or drop a .zip via SFTP.', 'rd-backup' ); ?></td></tr>
+				<?php else : ?>
+					<?php foreach ( $archives as $item ) : ?>
+						<tr>
+							<td><code><?php echo esc_html( $item['name'] ); ?></code></td>
+							<td><?php echo esc_html( $item['sizeh'] ); ?></td>
+							<td><?php echo esc_html( $item['dateh'] ); ?></td>
+							<td><button type="button" class="button rdbk-preview-btn" data-file="<?php echo esc_attr( $item['name'] ); ?>"><?php esc_html_e( 'Preview', 'rd-backup' ); ?></button></td>
+						</tr>
+					<?php endforeach; ?>
+				<?php endif; ?>
+			</tbody>
+		</table>
+
+		<div id="rdbk-preview" class="rdbk-preview" hidden></div>
+		<?php
 	}
 
 	private function render_health(): void {

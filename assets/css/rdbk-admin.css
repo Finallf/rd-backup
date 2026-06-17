@@ -79,3 +79,21 @@
 .rdbk-db-result {
 	margin-top: 12px;
 }
+
+.rdbk-preview {
+	margin-top: 16px;
+	max-width: 760px;
+}
+
+.rdbk-preview table {
+	margin-top: 8px;
+}
+
+.rdbk-warn-list {
+	margin: 4px 0 0 18px;
+	list-style: disc;
+}
+
+.rdbk-warn-list li {
+	color: #8a6d1b;
+}
