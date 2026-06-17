@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.0.0-beta.3](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.2...v1.0.0-beta.3) (2026-06-17)
+
+### ✨ Features
+
+* **backup:** resumable database dumper (PHP/wpdb) ([4173b02](https://github.com/Finallf/rd-backup/commit/4173b024d6682f5791f1eefc1f4b62e3c0292ce3))
+
+<br>
+
+---
+
 ## [1.0.0-beta.2](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.1...v1.0.0-beta.2) (2026-06-16)
 
 ### ✨ Features
