@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.0.0-beta.5](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.4...v1.0.0-beta.5) (2026-06-17)
+
+### ✨ Features
+
+* **restore:** read-only preview — validate manifest, integrity, warnings ([1f85dfc](https://github.com/Finallf/rd-backup/commit/1f85dfce65763fa395d54d0f2323278f738e75b5))
+
+<br>
+
+---
+
 ## [1.0.0-beta.4](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.3...v1.0.0-beta.4) (2026-06-17)
 
 ### ✨ Features
