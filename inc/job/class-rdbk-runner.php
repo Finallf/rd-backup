@@ -61,7 +61,9 @@ class RDBK_Runner {
 
 		$job = RDBK_Job::start( $type );
 		if ( 'db_dump' === $type ) {
-			RDBK_DB_Dump::instance()->init( $job );
+			$this->db_dump_init( $job );
+		} elseif ( 'backup' === $type ) {
+			RDBK_Backup::instance()->init( $job );
 		}
 		wp_send_json_success( $this->payload( $job ) );
 	}
@@ -72,7 +74,20 @@ class RDBK_Runner {
 	private function requested_type(): string {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified in guard() before this runs.
 		$type = isset( $_POST['type'] ) ? sanitize_key( wp_unslash( $_POST['type'] ) ) : 'test';
-		return in_array( $type, array( 'test', 'db_dump' ), true ) ? $type : 'test';
+		return in_array( $type, array( 'test', 'db_dump', 'backup' ), true ) ? $type : 'test';
+	}
+
+	/**
+	 * Standalone DB dump: writes the .sql straight into the store for download.
+	 */
+	private function db_dump_init( RDBK_Job $job ): void {
+		$storage = RDBK_Storage::instance();
+		$storage->ensure_dir();
+		$sql_name = 'database-' . bin2hex( random_bytes( 8 ) ) . '.sql';
+		$job->set( 'sql_name', $sql_name );
+		RDBK_DB_Dump::instance()->init( $job, $storage->dir() . '/' . $sql_name );
+		$job->set( 'phase', 'db' );
+		$job->save();
 	}
 
 	public function ajax_step(): void {
@@ -83,13 +98,49 @@ class RDBK_Runner {
 			wp_send_json_error( array( 'message' => __( 'No active job.', 'rd-backup' ) ), 404 );
 		}
 
-		if ( 'db_dump' === $job->get( 'type' ) ) {
-			RDBK_DB_Dump::instance()->step( $job );
+		$type = (string) $job->get( 'type' );
+		if ( 'backup' === $type ) {
+			RDBK_Backup::instance()->step( $job );
+		} elseif ( 'db_dump' === $type ) {
+			$this->db_dump_step( $job );
 		} else {
 			$this->fake_step( $job );
 		}
 
 		wp_send_json_success( $this->payload( $job ) );
+	}
+
+	/**
+	 * Advances a standalone DB dump; finalizes the job with download stats.
+	 */
+	private function db_dump_step( RDBK_Job $job ): void {
+		$dump = RDBK_DB_Dump::instance();
+		$done = $dump->step( $job );
+		$job->set( 'progress', $dump->progress( $job ) );
+
+		if ( $done ) {
+			$storage  = RDBK_Storage::instance();
+			$sql_name = (string) $job->get( 'sql_name' );
+			$sql_path = $storage->dir() . '/' . $sql_name;
+			$db_stats = (array) $job->get( 'db_stats', array() );
+			$size     = file_exists( $sql_path ) ? (int) filesize( $sql_path ) : 0;
+
+			$job->set(
+				'stats',
+				array(
+					'tables' => (int) ( $db_stats['tables'] ?? 0 ),
+					'rows'   => (int) ( $db_stats['rows'] ?? 0 ),
+					'sizeh'  => size_format( $size ),
+					'file'   => $sql_name,
+					'url'    => $storage->download_url( $sql_name ),
+				)
+			);
+			$job->set( 'progress', 100 );
+			$job->set( 'phase', 'done' );
+			$job->set( 'status', 'done' );
+		}
+
+		$job->save();
 	}
 
 	/**

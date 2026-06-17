@@ -4,8 +4,10 @@
  * mysqldump-style .sql entirely through $wpdb (works on any host, with no
  * dependency on exec()/mysqldump). Regenerable transients are skipped.
  *
- * Cursor state ({ table_index, row_offset }) lives on the job, so the dump is
- * resumable across requests.
+ * Reusable: init() takes the target .sql path, step() returns true when the
+ * dump is complete, and the caller decides what to do next (finalize a
+ * standalone dump, or move on to the uploads phase of a full backup). Cursor
+ * state lives on the job under db_* keys, so the dump is resumable.
  *
  * @package RD_Backup
  */
@@ -39,16 +41,11 @@ class RDBK_DB_Dump {
 	 * Initializes a dump on the job: lists tables, opens a fresh .sql with a
 	 * header, and seeds the cursor.
 	 */
-	public function init( RDBK_Job $job ): void {
+	public function init( RDBK_Job $job, string $sql_path ): void {
 		global $wpdb;
 
-		$storage = RDBK_Storage::instance();
-		$storage->ensure_dir();
-
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- dumping every table; not a cacheable read.
-		$tables   = (array) $wpdb->get_col( 'SHOW TABLES' );
-		$sql_name = 'database-' . bin2hex( random_bytes( 8 ) ) . '.sql';
-		$sql_path = $storage->dir() . '/' . $sql_name;
+		$tables = array_values( (array) $wpdb->get_col( 'SHOW TABLES' ) );
 
 		$header = "-- RD Backup database dump\n"
 			. '-- Generated: ' . gmdate( 'c' ) . "\n"
@@ -57,35 +54,32 @@ class RDBK_DB_Dump {
 			. "SET FOREIGN_KEY_CHECKS = 0;\n\n";
 		$this->write( $sql_path, $header, true );
 
-		$job->set( 'tables', array_values( $tables ) );
-		$job->set( 'table_index', 0 );
-		$job->set( 'row_offset', 0 );
-		$job->set( 'sql_name', $sql_name );
-		$job->set( 'total', max( 1, count( $tables ) ) );
+		$job->set( 'db_tables', $tables );
+		$job->set( 'db_table_index', 0 );
+		$job->set( 'db_row_offset', 0 );
+		$job->set( 'db_sql_path', $sql_path );
 		$job->set(
-			'stats',
+			'db_stats',
 			array(
-				'tables' => count( $tables ),
-				'rows'   => 0,
+				'tables'    => count( $tables ),
+				'rows'      => 0,
+				'per_table' => array_fill_keys( $tables, 0 ),
 			)
 		);
-		$job->set( 'phase', 'db' );
 		$job->save();
 	}
 
 	/**
-	 * Processes one batch: structure on first touch of a table, then up to BATCH
-	 * rows; advances the cursor; finalizes when all tables are done.
+	 * Processes one batch. Returns true when every table has been dumped.
 	 */
-	public function step( RDBK_Job $job ): void {
-		$tables   = (array) $job->get( 'tables', array() );
-		$ti       = (int) $job->get( 'table_index', 0 );
-		$offset   = (int) $job->get( 'row_offset', 0 );
-		$sql_path = RDBK_Storage::instance()->dir() . '/' . (string) $job->get( 'sql_name' );
+	public function step( RDBK_Job $job ): bool {
+		$tables   = (array) $job->get( 'db_tables', array() );
+		$ti       = (int) $job->get( 'db_table_index', 0 );
+		$offset   = (int) $job->get( 'db_row_offset', 0 );
+		$sql_path = (string) $job->get( 'db_sql_path' );
 
 		if ( $ti >= count( $tables ) ) {
-			$this->finish( $job, $sql_path );
-			return;
+			return true;
 		}
 
 		$table = (string) $tables[ $ti ];
@@ -99,28 +93,36 @@ class RDBK_DB_Dump {
 
 		if ( $count > 0 ) {
 			$this->write( $sql_path, $this->rows_to_inserts( $table, $rows ) );
-			$stats         = (array) $job->get( 'stats' );
-			$stats['rows'] = (int) ( $stats['rows'] ?? 0 ) + $count;
-			$job->set( 'stats', $stats );
+
+			$stats                        = (array) $job->get( 'db_stats' );
+			$stats['rows']                = (int) ( $stats['rows'] ?? 0 ) + $count;
+			$stats['per_table'][ $table ] = (int) ( $stats['per_table'][ $table ] ?? 0 ) + $count;
+			$job->set( 'db_stats', $stats );
 		}
 
 		if ( $count < self::BATCH ) {
-			$job->set( 'table_index', $ti + 1 );
-			$job->set( 'row_offset', 0 );
+			$job->set( 'db_table_index', $ti + 1 );
+			$job->set( 'db_row_offset', 0 );
 		} else {
-			$job->set( 'row_offset', $offset + $count );
+			$job->set( 'db_row_offset', $offset + $count );
 		}
 
-		$done  = (int) $job->get( 'table_index', 0 );
-		$total = max( 1, count( $tables ) );
-		$job->set( 'progress', (int) floor( $done / $total * 100 ) );
-
-		if ( $done >= count( $tables ) ) {
-			$this->finish( $job, $sql_path );
-			return;
+		$complete = (int) $job->get( 'db_table_index', 0 ) >= count( $tables );
+		if ( $complete ) {
+			$this->write( $sql_path, "SET FOREIGN_KEY_CHECKS = 1;\n" );
 		}
 
 		$job->save();
+		return $complete;
+	}
+
+	/**
+	 * Progress (0–100) of the db phase, by table index.
+	 */
+	public function progress( RDBK_Job $job ): int {
+		$total = max( 1, count( (array) $job->get( 'db_tables', array() ) ) );
+		$done  = (int) $job->get( 'db_table_index', 0 );
+		return (int) floor( $done / $total * 100 );
 	}
 
 	/**
@@ -169,27 +171,6 @@ class RDBK_DB_Dump {
 			$out .= "INSERT INTO `$table` VALUES (" . implode( ', ', $vals ) . ");\n";
 		}
 		return $out . "\n";
-	}
-
-	/**
-	 * Writes the footer and marks the job done with final stats.
-	 */
-	private function finish( RDBK_Job $job, string $sql_path ): void {
-		$this->write( $sql_path, "SET FOREIGN_KEY_CHECKS = 1;\n" );
-
-		$size  = file_exists( $sql_path ) ? (int) filesize( $sql_path ) : 0;
-		$stats = (array) $job->get( 'stats' );
-
-		$stats['bytes'] = $size;
-		$stats['sizeh'] = size_format( $size );
-		$stats['file']  = (string) $job->get( 'sql_name' );
-		$stats['url']   = RDBK_Storage::instance()->download_url( (string) $job->get( 'sql_name' ) );
-
-		$job->set( 'stats', $stats );
-		$job->set( 'progress', 100 );
-		$job->set( 'phase', 'done' );
-		$job->set( 'status', 'done' );
-		$job->save();
 	}
 
 	/**

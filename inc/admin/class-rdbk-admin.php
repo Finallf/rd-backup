@@ -88,6 +88,7 @@ class RDBK_Admin {
 					'tables'      => __( 'tables', 'rd-backup' ),
 					'rows'        => __( 'rows', 'rd-backup' ),
 					'downloadSql' => __( 'Download database.sql', 'rd-backup' ),
+					'backupDone'  => __( 'Backup created:', 'rd-backup' ),
 				),
 			)
 		);
@@ -150,8 +151,26 @@ class RDBK_Admin {
 
 	private function render_backup(): void {
 		?>
+		<h2><?php esc_html_e( 'Create a backup', 'rd-backup' ); ?></h2>
 		<p class="description">
-			<?php esc_html_e( 'Scaffold stage: the button below runs a fake job (0→100%) to validate the resumable engine. Real backup phases arrive in the next releases.', 'rd-backup' ); ?>
+			<?php esc_html_e( 'Builds a complete .zip — the full database dump plus the uploads folder — and saves it to the store below.', 'rd-backup' ); ?>
+		</p>
+		<p>
+			<button type="button" class="button button-primary button-hero" id="rdbk-backup-run"><?php esc_html_e( 'Create backup', 'rd-backup' ); ?></button>
+			<span id="rdbk-backup-msg" class="rdbk-inline-msg" aria-live="polite"></span>
+		</p>
+		<div class="rdbk-progress" id="rdbk-backup-progress" hidden>
+			<div class="rdbk-progress__track">
+				<div class="rdbk-progress__bar" id="rdbk-backup-bar" style="width:0%"></div>
+			</div>
+			<p class="rdbk-progress__status" id="rdbk-backup-status" aria-live="polite"></p>
+		</div>
+
+		<hr>
+
+		<h2><?php esc_html_e( 'Engine test (scaffold)', 'rd-backup' ); ?></h2>
+		<p class="description">
+			<?php esc_html_e( 'Runs a fake job (0→100%) to validate the resumable loop.', 'rd-backup' ); ?>
 		</p>
 
 		<div class="rdbk-runner" id="rdbk-runner">

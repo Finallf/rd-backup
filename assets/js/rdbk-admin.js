@@ -302,4 +302,97 @@
 			} );
 		} );
 	}
+
+	// --- Full backup (PR4) ---
+	var bkRunBtn = document.getElementById( 'rdbk-backup-run' );
+	var bkProgress = document.getElementById( 'rdbk-backup-progress' );
+	var bkBar = document.getElementById( 'rdbk-backup-bar' );
+	var bkStatus = document.getElementById( 'rdbk-backup-status' );
+	var bkMsg = document.getElementById( 'rdbk-backup-msg' );
+	var bkRunning = false;
+
+	function bkSetBar( p ) {
+		if ( bkBar ) {
+			bkBar.style.width = p + '%';
+		}
+	}
+
+	function bkSetStatus( t ) {
+		if ( bkStatus ) {
+			bkStatus.textContent = t;
+		}
+	}
+
+	function bkFinish( label, data ) {
+		bkRunning = false;
+		if ( bkRunBtn ) {
+			bkRunBtn.disabled = false;
+		}
+		bkSetStatus( label );
+		var s = ( data && data.stats ) || null;
+		if ( s ) {
+			if ( bkMsg ) {
+				bkMsg.textContent = ( i18n.backupDone || 'Backup created:' ) + ' ' + ( s.file || '' ) + ' (' + ( s.sizeh || '' ) + ')';
+			}
+			if ( s.items ) {
+				renderArchives( s.items );
+			}
+		}
+	}
+
+	function bkLoop() {
+		if ( ! bkRunning ) {
+			return;
+		}
+		post( 'rdbk_step' ).then( function ( r ) {
+			if ( ! r || ! r.success ) {
+				bkFinish( i18n.failed || 'Failed.' );
+				return;
+			}
+			var d = r.data || {};
+			bkSetBar( d.progress || 0 );
+			if ( d.done ) {
+				bkSetBar( 100 );
+				bkFinish( i18n.done || 'Done!', d );
+				return;
+			}
+			bkSetStatus( ( i18n.working || 'Working…' ) + ' ' + ( d.progress || 0 ) + '%' );
+			bkLoop();
+		} ).catch( function () {
+			bkFinish( i18n.failed || 'Failed.' );
+		} );
+	}
+
+	if ( bkRunBtn ) {
+		bkRunBtn.addEventListener( 'click', function () {
+			if ( bkRunning ) {
+				return;
+			}
+			bkRunning = true;
+			bkRunBtn.disabled = true;
+			if ( bkProgress ) {
+				bkProgress.hidden = false;
+			}
+			if ( bkMsg ) {
+				bkMsg.textContent = '';
+			}
+			bkSetBar( 0 );
+			bkSetStatus( i18n.starting || 'Starting…' );
+			post( 'rdbk_start', { type: 'backup' } ).then( function ( r ) {
+				if ( ! r || ! r.success ) {
+					bkFinish( i18n.failed || 'Failed.' );
+					return;
+				}
+				var d = r.data || {};
+				bkSetBar( d.progress || 0 );
+				if ( d.done ) {
+					bkFinish( i18n.done || 'Done!', d );
+					return;
+				}
+				bkLoop();
+			} ).catch( function () {
+				bkFinish( i18n.failed || 'Failed.' );
+			} );
+		} );
+	}
 } )();
