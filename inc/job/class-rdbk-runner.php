@@ -51,6 +51,7 @@ class RDBK_Runner {
 
 	public function ajax_start(): void {
 		$this->guard();
+		$type = $this->requested_type();
 
 		// One job at a time: resume the running one instead of starting another.
 		$existing = RDBK_Job::load();
@@ -58,8 +59,20 @@ class RDBK_Runner {
 			wp_send_json_success( $this->payload( $existing ) );
 		}
 
-		$job = RDBK_Job::start( 'test' );
+		$job = RDBK_Job::start( $type );
+		if ( 'db_dump' === $type ) {
+			RDBK_DB_Dump::instance()->init( $job );
+		}
 		wp_send_json_success( $this->payload( $job ) );
+	}
+
+	/**
+	 * Reads and whitelists the requested job type.
+	 */
+	private function requested_type(): string {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified in guard() before this runs.
+		$type = isset( $_POST['type'] ) ? sanitize_key( wp_unslash( $_POST['type'] ) ) : 'test';
+		return in_array( $type, array( 'test', 'db_dump' ), true ) ? $type : 'test';
 	}
 
 	public function ajax_step(): void {
@@ -70,7 +83,19 @@ class RDBK_Runner {
 			wp_send_json_error( array( 'message' => __( 'No active job.', 'rd-backup' ) ), 404 );
 		}
 
-		// Fake engine: advance the counter to simulate one slice of work.
+		if ( 'db_dump' === $job->get( 'type' ) ) {
+			RDBK_DB_Dump::instance()->step( $job );
+		} else {
+			$this->fake_step( $job );
+		}
+
+		wp_send_json_success( $this->payload( $job ) );
+	}
+
+	/**
+	 * Placeholder engine (PR1): advances a counter to exercise the AJAX loop.
+	 */
+	private function fake_step( RDBK_Job $job ): void {
 		$cursor = min( 100, (int) $job->get( 'cursor', 0 ) + 10 );
 		$job->set( 'cursor', $cursor );
 		$job->set( 'progress', $cursor );
@@ -83,7 +108,6 @@ class RDBK_Runner {
 		}
 
 		$job->save();
-		wp_send_json_success( $this->payload( $job ) );
 	}
 
 	public function ajax_cancel(): void {
@@ -135,6 +159,7 @@ class RDBK_Runner {
 			'phase'    => (string) $job->get( 'phase' ),
 			'progress' => (int) $job->get( 'progress', 0 ),
 			'done'     => 'done' === $job->get( 'status' ),
+			'stats'    => $job->get( 'stats' ),
 		);
 	}
 }

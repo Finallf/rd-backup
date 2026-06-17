@@ -31,6 +31,7 @@ define( 'RDBK_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 require_once RDBK_PLUGIN_DIR . 'inc/job/class-rdbk-job.php';
 require_once RDBK_PLUGIN_DIR . 'inc/job/class-rdbk-runner.php';
 require_once RDBK_PLUGIN_DIR . 'inc/storage/class-rdbk-storage.php';
+require_once RDBK_PLUGIN_DIR . 'inc/backup/class-rdbk-db-dump.php';
 require_once RDBK_PLUGIN_DIR . 'inc/admin/class-rdbk-healthcheck.php';
 require_once RDBK_PLUGIN_DIR . 'inc/admin/class-rdbk-admin.php';
 require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-plugin.php';

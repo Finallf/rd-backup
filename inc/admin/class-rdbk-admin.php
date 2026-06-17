@@ -75,15 +75,19 @@ class RDBK_Admin {
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'nonce'   => wp_create_nonce( 'rdbk_runner' ),
 				'i18n'    => array(
-					'starting'   => __( 'Starting…', 'rd-backup' ),
-					'working'    => __( 'Working…', 'rd-backup' ),
-					'done'       => __( 'Done!', 'rd-backup' ),
-					'cancelled'  => __( 'Cancelled.', 'rd-backup' ),
-					'failed'     => __( 'Failed. Check the logs.', 'rd-backup' ),
-					'noArchives' => __( 'No archives yet.', 'rd-backup' ),
-					'download'   => __( 'Download', 'rd-backup' ),
-					'del'        => __( 'Delete', 'rd-backup' ),
-					'confirmDel' => __( 'Delete this file?', 'rd-backup' ),
+					'starting'    => __( 'Starting…', 'rd-backup' ),
+					'working'     => __( 'Working…', 'rd-backup' ),
+					'done'        => __( 'Done!', 'rd-backup' ),
+					'cancelled'   => __( 'Cancelled.', 'rd-backup' ),
+					'failed'      => __( 'Failed. Check the logs.', 'rd-backup' ),
+					'noArchives'  => __( 'No archives yet.', 'rd-backup' ),
+					'download'    => __( 'Download', 'rd-backup' ),
+					'del'         => __( 'Delete', 'rd-backup' ),
+					'confirmDel'  => __( 'Delete this file?', 'rd-backup' ),
+					'dbDone'      => __( 'Dump complete:', 'rd-backup' ),
+					'tables'      => __( 'tables', 'rd-backup' ),
+					'rows'        => __( 'rows', 'rd-backup' ),
+					'downloadSql' => __( 'Download database.sql', 'rd-backup' ),
 				),
 			)
 		);
@@ -203,6 +207,26 @@ class RDBK_Admin {
 			<?php esc_html_e( 'Defense in depth for nginx (including nginx-in-front setups like HestiaCP, where the .htaccess can be bypassed). Add this to the site config:', 'rd-backup' ); ?>
 		</p>
 		<pre class="rdbk-snippet"><?php echo esc_html( RDBK_Storage::instance()->nginx_rule() ); ?></pre>
+
+		<hr>
+
+		<h2><?php esc_html_e( 'Database dump', 'rd-backup' ); ?></h2>
+		<p class="description">
+			<?php esc_html_e( 'Runs the resumable database dumper and writes database.sql to the store. Download it to verify the dump. This is the first piece of the real backup.', 'rd-backup' ); ?>
+		</p>
+
+		<p>
+			<button type="button" class="button button-primary" id="rdbk-dbdump-run"><?php esc_html_e( 'Test DB dump', 'rd-backup' ); ?></button>
+		</p>
+
+		<div class="rdbk-progress" id="rdbk-dbdump-progress" hidden>
+			<div class="rdbk-progress__track">
+				<div class="rdbk-progress__bar" id="rdbk-dbdump-bar" style="width:0%"></div>
+			</div>
+			<p class="rdbk-progress__status" id="rdbk-dbdump-status" aria-live="polite"></p>
+		</div>
+
+		<div class="rdbk-db-result" id="rdbk-dbdump-result" hidden></div>
 		<?php
 	}
 

@@ -156,7 +156,8 @@ class RDBK_Storage {
 	 */
 	public function resolve_safe( string $name ): string {
 		$name = basename( $name );
-		if ( '' === $name || '.zip' !== substr( $name, -4 ) ) {
+		$ext  = strtolower( (string) substr( $name, -4 ) );
+		if ( '' === $name || ( '.zip' !== $ext && '.sql' !== $ext ) ) {
 			return '';
 		}
 		$real = realpath( $this->dir() . '/' . $name );
@@ -263,8 +264,10 @@ class RDBK_Storage {
 			wp_die( esc_html__( 'Backup file not found.', 'rd-backup' ), 404 );
 		}
 
+		$mime = ( '.sql' === strtolower( (string) substr( $path, -4 ) ) ) ? 'application/sql' : 'application/zip';
+
 		nocache_headers();
-		header( 'Content-Type: application/zip' );
+		header( 'Content-Type: ' . $mime );
 		header( 'Content-Disposition: attachment; filename="' . basename( $path ) . '"' );
 		header( 'Content-Length: ' . filesize( $path ) );
 

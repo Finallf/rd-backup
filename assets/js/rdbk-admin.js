@@ -23,10 +23,15 @@
 	var status = document.getElementById( 'rdbk-progress-status' );
 	var running = false;
 
-	function post( action ) {
+	function post( action, extra ) {
 		var body = new FormData();
 		body.append( 'action', action );
 		body.append( 'nonce', cfg.nonce );
+		if ( extra ) {
+			Object.keys( extra ).forEach( function ( k ) {
+				body.append( k, extra[ k ] );
+			} );
+		}
 		return fetch( cfg.ajaxUrl, {
 			method: 'POST',
 			credentials: 'same-origin',
@@ -98,7 +103,7 @@
 		setBar( 0 );
 		setStatus( i18n.starting || 'Starting…' );
 
-		post( 'rdbk_start' ).then( function ( r ) {
+		post( 'rdbk_start', { type: 'test' } ).then( function ( r ) {
 			if ( ! r || ! r.success ) {
 				finish( i18n.failed || 'Failed.' );
 				return;
@@ -192,6 +197,108 @@
 				if ( r && r.success ) {
 					renderArchives( r.data && r.data.items );
 				}
+			} );
+		} );
+	}
+
+	// --- DB dump test (PR3) ---
+	var dbRunBtn = document.getElementById( 'rdbk-dbdump-run' );
+	var dbProgress = document.getElementById( 'rdbk-dbdump-progress' );
+	var dbBar = document.getElementById( 'rdbk-dbdump-bar' );
+	var dbStatus = document.getElementById( 'rdbk-dbdump-status' );
+	var dbResult = document.getElementById( 'rdbk-dbdump-result' );
+	var dbRunning = false;
+
+	function dbSetBar( p ) {
+		if ( dbBar ) {
+			dbBar.style.width = p + '%';
+		}
+	}
+
+	function dbSetStatus( t ) {
+		if ( dbStatus ) {
+			dbStatus.textContent = t;
+		}
+	}
+
+	function renderDbResult( data ) {
+		if ( ! dbResult ) {
+			return;
+		}
+		var s = ( data && data.stats ) || null;
+		if ( ! s ) {
+			dbResult.hidden = true;
+			return;
+		}
+		dbResult.hidden = false;
+		var line = esc( i18n.dbDone || 'Dump complete:' ) + ' <strong>' + esc( s.tables ) + '</strong> ' + esc( i18n.tables || 'tables' ) +
+			', <strong>' + esc( s.rows ) + '</strong> ' + esc( i18n.rows || 'rows' ) +
+			', <strong>' + esc( s.sizeh || '' ) + '</strong>.';
+		var dl = s.url ? '<p><a class="button button-primary" href="' + esc( s.url ) + '">' + esc( i18n.downloadSql || 'Download database.sql' ) + '</a></p>' : '';
+		dbResult.innerHTML = '<p>' + line + '</p>' + dl;
+	}
+
+	function dbFinish( label, data ) {
+		dbRunning = false;
+		if ( dbRunBtn ) {
+			dbRunBtn.disabled = false;
+		}
+		dbSetStatus( label );
+		renderDbResult( data );
+	}
+
+	function dbLoop() {
+		if ( ! dbRunning ) {
+			return;
+		}
+		post( 'rdbk_step' ).then( function ( r ) {
+			if ( ! r || ! r.success ) {
+				dbFinish( i18n.failed || 'Failed.' );
+				return;
+			}
+			var d = r.data || {};
+			dbSetBar( d.progress || 0 );
+			if ( d.done ) {
+				dbSetBar( 100 );
+				dbFinish( i18n.done || 'Done!', d );
+				return;
+			}
+			dbSetStatus( ( i18n.working || 'Working…' ) + ' ' + ( d.progress || 0 ) + '%' );
+			dbLoop();
+		} ).catch( function () {
+			dbFinish( i18n.failed || 'Failed.' );
+		} );
+	}
+
+	if ( dbRunBtn ) {
+		dbRunBtn.addEventListener( 'click', function () {
+			if ( dbRunning ) {
+				return;
+			}
+			dbRunning = true;
+			dbRunBtn.disabled = true;
+			if ( dbProgress ) {
+				dbProgress.hidden = false;
+			}
+			if ( dbResult ) {
+				dbResult.hidden = true;
+			}
+			dbSetBar( 0 );
+			dbSetStatus( i18n.starting || 'Starting…' );
+			post( 'rdbk_start', { type: 'db_dump' } ).then( function ( r ) {
+				if ( ! r || ! r.success ) {
+					dbFinish( i18n.failed || 'Failed.' );
+					return;
+				}
+				var d = r.data || {};
+				dbSetBar( d.progress || 0 );
+				if ( d.done ) {
+					dbFinish( i18n.done || 'Done!', d );
+					return;
+				}
+				dbLoop();
+			} ).catch( function () {
+				dbFinish( i18n.failed || 'Failed.' );
 			} );
 		} );
 	}
