@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.0.0-beta.4](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.3...v1.0.0-beta.4) (2026-06-17)
+
+### ✨ Features
+
+* **backup:** full backup archiver — db + uploads + manifest into one .zip ([ad05c2e](https://github.com/Finallf/rd-backup/commit/ad05c2e1605d6af6903a7fc914f3d4ef0b4e15e8))
+
+<br>
+
+---
+
 ## [1.0.0-beta.3](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.2...v1.0.0-beta.3) (2026-06-17)
 
 ### ✨ Features
