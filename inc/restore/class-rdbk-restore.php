@@ -107,6 +107,7 @@ class RDBK_Restore {
 		}
 		$job->set( 'r_phase', 'import' );
 		$job->set( 'r_file', basename( $path ) );
+		$job->set( 'r_zip', $path );
 		$job->set( 'progress', 0 );
 		$job->save();
 		return true;
@@ -116,9 +117,22 @@ class RDBK_Restore {
 	 * Advances the restore job: DB import, then finalize.
 	 */
 	public function step_restore( RDBK_Job $job ): void {
-		if ( 'import' === (string) $job->get( 'r_phase' ) ) {
+		$phase = (string) $job->get( 'r_phase' );
+
+		if ( 'import' === $phase ) {
 			$done = RDBK_DB_Import::instance()->step( $job );
-			$job->set( 'progress', min( 99, RDBK_DB_Import::instance()->progress( $job ) ) );
+			$job->set( 'progress', (int) round( RDBK_DB_Import::instance()->progress( $job ) * 0.6 ) );
+			if ( $done ) {
+				RDBK_Uploads_Extract::instance()->init( $job, (string) $job->get( 'r_zip' ) );
+				$job->set( 'r_phase', 'uploads' );
+			}
+			$job->save();
+			return;
+		}
+
+		if ( 'uploads' === $phase ) {
+			$done = RDBK_Uploads_Extract::instance()->step( $job );
+			$job->set( 'progress', 60 + (int) round( RDBK_Uploads_Extract::instance()->progress( $job ) * 0.39 ) );
 			if ( $done ) {
 				$job->set( 'r_phase', 'finalize' );
 			}
@@ -143,6 +157,7 @@ class RDBK_Restore {
 			array(
 				'file'       => (string) $job->get( 'r_file' ),
 				'statements' => (int) $job->get( 'imp_statements', 0 ),
+				'files'      => (int) $job->get( 'up_total', 0 ),
 			)
 		);
 		$job->set( 'progress', 100 );
