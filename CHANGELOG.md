@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.0.0-beta.14](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.13...v1.0.0-beta.14) (2026-06-18)
+
+### ✨ Features
+
+* **updater:** GitHub self-updater + Updates card (1:1 with the theme) ([ea20e47](https://github.com/Finallf/rd-backup/commit/ea20e47a0e4018a2a5f4c15f76a0bf3cc30401bb))
+
+<br>
+
+---
+
 ## [1.0.0-beta.13](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.12...v1.0.0-beta.13) (2026-06-18)
 
 ### ✨ Features
