@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.0.0-beta.12](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.11...v1.0.0-beta.12) (2026-06-18)
+
+### ✨ Features
+
+* **admin:** 1:1 ReloadeD-theme panel UI ([a34d188](https://github.com/Finallf/rd-backup/commit/a34d188201b6014ed7ed60f43d8d567215cb749a))
+
+<br>
+
+---
+
 ## [1.0.0-beta.11](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.10...v1.0.0-beta.11) (2026-06-18)
 
 ### ✨ Features
