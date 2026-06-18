@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.0.0-beta.8](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.7...v1.0.0-beta.8) (2026-06-18)
+
+### ✨ Features
+
+* **restore:** serialized-safe search-replace for cross-domain restores ([da2c593](https://github.com/Finallf/rd-backup/commit/da2c593bd4f596ae3389d35123fa6066e1342430))
+
+<br>
+
+---
+
 ## [1.0.0-beta.7](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.6...v1.0.0-beta.7) (2026-06-18)
 
 ### ✨ Features
