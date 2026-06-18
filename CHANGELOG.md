@@ -7,6 +7,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.0.0-beta.6](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.5...v1.0.0-beta.6) (2026-06-18)
+
+### ✨ Features
+
+* **restore:** apply restore — safety backup + resumable DB import ([063b2d7](https://github.com/Finallf/rd-backup/commit/063b2d703769c9f43d7560e1f11619b9884f4e43))
+
+### 🐛 Bug Fixes
+
+* **backup:** escape dump values with mysqli_real_escape_string ([ddb1b9f](https://github.com/Finallf/rd-backup/commit/ddb1b9f7da4953d84125e2c998be853e5efa2630))
+
+<br>
+
+---
+
 ## [1.0.0-beta.5](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.4...v1.0.0-beta.5) (2026-06-17)
 
 ### ✨ Features
