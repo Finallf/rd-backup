@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.0.0-beta.7](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.6...v1.0.0-beta.7) (2026-06-18)
+
+### ✨ Features
+
+* **restore:** extract uploads — completes the same-domain restore ([823f113](https://github.com/Finallf/rd-backup/commit/823f1133ba811b5541e8ca96955f198365193539))
+
+<br>
+
+---
+
 ## [1.0.0-beta.6](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.5...v1.0.0-beta.6) (2026-06-18)
 
 ### ✨ Features
