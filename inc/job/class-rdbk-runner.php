@@ -38,6 +38,7 @@ class RDBK_Runner {
 		add_action( 'wp_ajax_nopriv_rdbk_step', array( $this, 'ajax_step' ) );
 		add_action( 'wp_ajax_rdbk_cancel', array( $this, 'ajax_cancel' ) );
 		add_action( 'wp_ajax_rdbk_delete_archive', array( $this, 'ajax_delete_archive' ) );
+		add_action( 'wp_ajax_rdbk_upload', array( $this, 'ajax_upload' ) );
 		add_action( 'wp_ajax_rdbk_preview', array( $this, 'ajax_preview' ) );
 	}
 
@@ -148,6 +149,40 @@ class RDBK_Runner {
 		}
 
 		wp_send_json_success( array( 'items' => RDBK_Storage::instance()->list_archives() ) );
+	}
+
+	/**
+	 * Stores an uploaded .zip into the store (capped by the server's upload limit;
+	 * larger archives go in via SFTP). Returns the refreshed archive list.
+	 */
+	public function ajax_upload(): void {
+		$this->guard();
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified in guard() above.
+		$error = isset( $_FILES['file']['error'] ) ? (int) $_FILES['file']['error'] : UPLOAD_ERR_NO_FILE;
+		if ( UPLOAD_ERR_OK !== $error ) {
+			$message = ( UPLOAD_ERR_INI_SIZE === $error || UPLOAD_ERR_FORM_SIZE === $error )
+				? __( 'The file is larger than this server allows — upload it via SFTP instead.', 'rd-backup' )
+				: __( 'Upload failed — no file received.', 'rd-backup' );
+			wp_send_json_error( array( 'message' => $message ), 400 );
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- nonce verified in guard(); tmp_name is PHP's own upload path, re-validated by is_uploaded_file() in store_upload().
+		$tmp = isset( $_FILES['file']['tmp_name'] ) ? sanitize_text_field( wp_unslash( $_FILES['file']['tmp_name'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified in guard() above.
+		$name = isset( $_FILES['file']['name'] ) ? sanitize_text_field( wp_unslash( $_FILES['file']['name'] ) ) : '';
+
+		$stored = RDBK_Storage::instance()->store_upload( $tmp, $name );
+		if ( '' === $stored ) {
+			wp_send_json_error( array( 'message' => __( 'Only valid .zip backups can be uploaded.', 'rd-backup' ) ), 400 );
+		}
+
+		wp_send_json_success(
+			array(
+				'name'  => $stored,
+				'items' => RDBK_Storage::instance()->list_archives(),
+			)
+		);
 	}
 
 	/**

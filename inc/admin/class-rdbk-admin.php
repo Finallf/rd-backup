@@ -102,6 +102,10 @@ class RDBK_Admin {
 					'restoreDone'      => __( 'Restore complete. You may need to log in again — reload the page to see the restored site.', 'rd-backup' ),
 					'confirmReset'     => __( 'Clear the current job state? This does not touch your backups.', 'rd-backup' ),
 					'resetDone'        => __( 'Job state cleared.', 'rd-backup' ),
+					'uploadPick'       => __( 'Choose a .zip first.', 'rd-backup' ),
+					'uploadZipOnly'    => __( 'Only .zip backups can be uploaded.', 'rd-backup' ),
+					'uploading'        => __( 'Uploading…', 'rd-backup' ),
+					'uploadDone'       => __( 'Uploaded — refreshing…', 'rd-backup' ),
 				),
 			)
 		);
@@ -274,6 +278,30 @@ class RDBK_Admin {
 		</div>
 		<div class="rdbk-pdash">
 			<div class="rdbk-pgrid">
+				<div class="rdbk-card">
+					<h3 class="rdbk-card__title"><?php esc_html_e( 'Upload a backup', 'rd-backup' ); ?></h3>
+					<p class="rdbk-card__desc">
+						<?php
+						printf(
+							/* translators: %s: maximum upload size, e.g. 256 MB */
+							esc_html__( 'Upload a ReloadeD Backup .zip from another site (up to %s here). For larger archives, drop the file into the store via SFTP instead.', 'rd-backup' ),
+							esc_html( size_format( wp_max_upload_size() ) )
+						);
+						?>
+					</p>
+					<p>
+						<input type="file" id="rdbk-upload-file" accept=".zip">
+						<button type="button" class="button" id="rdbk-upload-btn"><?php esc_html_e( 'Upload', 'rd-backup' ); ?></button>
+						<span id="rdbk-upload-msg" class="rdbk-inline-msg" aria-live="polite"></span>
+					</p>
+					<div class="rdbk-progress" id="rdbk-upload-progress" hidden>
+						<div class="rdbk-progress__track">
+							<div class="rdbk-progress__bar" id="rdbk-upload-bar"></div>
+						</div>
+						<p class="rdbk-progress__status" id="rdbk-upload-status" aria-live="polite"></p>
+					</div>
+				</div>
+
 				<div class="rdbk-card">
 					<h3 class="rdbk-card__title"><?php esc_html_e( 'Restore from a backup', 'rd-backup' ); ?></h3>
 					<p class="rdbk-card__desc">

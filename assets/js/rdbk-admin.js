@@ -457,4 +457,97 @@
 			} );
 		} );
 	}
+
+	// --- Upload a backup (single multipart request, capped by the PHP upload limit) ---
+	var uploadInput = document.getElementById( 'rdbk-upload-file' );
+	var uploadBtn = document.getElementById( 'rdbk-upload-btn' );
+	var uploadMsg = document.getElementById( 'rdbk-upload-msg' );
+	var uploadProgress = document.getElementById( 'rdbk-upload-progress' );
+	var uploadBar = document.getElementById( 'rdbk-upload-bar' );
+	var uploadStatus = document.getElementById( 'rdbk-upload-status' );
+
+	if ( uploadBtn && uploadInput ) {
+		uploadBtn.addEventListener( 'click', function () {
+			var file = uploadInput.files && uploadInput.files[ 0 ];
+			if ( ! file ) {
+				if ( uploadMsg ) {
+					uploadMsg.textContent = i18n.uploadPick || 'Choose a .zip first.';
+				}
+				return;
+			}
+			if ( ! /\.zip$/i.test( file.name ) ) {
+				if ( uploadMsg ) {
+					uploadMsg.textContent = i18n.uploadZipOnly || 'Only .zip backups can be uploaded.';
+				}
+				return;
+			}
+
+			uploadBtn.disabled = true;
+			if ( uploadMsg ) {
+				uploadMsg.textContent = '';
+			}
+			if ( uploadProgress ) {
+				uploadProgress.hidden = false;
+			}
+			if ( uploadBar ) {
+				uploadBar.style.width = '0%';
+			}
+
+			var body = new FormData();
+			body.append( 'action', 'rdbk_upload' );
+			body.append( 'nonce', cfg.nonce );
+			body.append( 'file', file );
+
+			var xhr = new XMLHttpRequest();
+			xhr.open( 'POST', cfg.ajaxUrl );
+
+			xhr.upload.addEventListener( 'progress', function ( e ) {
+				if ( ! e.lengthComputable ) {
+					return;
+				}
+				var pct = Math.round( ( e.loaded / e.total ) * 100 );
+				if ( uploadBar ) {
+					uploadBar.style.width = pct + '%';
+				}
+				if ( uploadStatus ) {
+					uploadStatus.textContent = ( i18n.uploading || 'Uploading…' ) + ' ' + pct + '%';
+				}
+			} );
+
+			xhr.addEventListener( 'load', function () {
+				var data = null;
+				try {
+					data = JSON.parse( xhr.responseText );
+				} catch ( err ) {
+					data = null;
+				}
+				if ( xhr.status >= 200 && xhr.status < 300 && data && data.success ) {
+					if ( uploadStatus ) {
+						uploadStatus.textContent = i18n.uploadDone || 'Uploaded — refreshing…';
+					}
+					window.location.reload();
+					return;
+				}
+				uploadBtn.disabled = false;
+				if ( uploadProgress ) {
+					uploadProgress.hidden = true;
+				}
+				if ( uploadMsg ) {
+					uploadMsg.textContent = ( data && data.data && data.data.message ) || i18n.failed || 'Failed.';
+				}
+			} );
+
+			xhr.addEventListener( 'error', function () {
+				uploadBtn.disabled = false;
+				if ( uploadProgress ) {
+					uploadProgress.hidden = true;
+				}
+				if ( uploadMsg ) {
+					uploadMsg.textContent = i18n.failed || 'Failed.';
+				}
+			} );
+
+			xhr.send( body );
+		} );
+	}
 } )();

@@ -190,6 +190,27 @@ class RDBK_Storage {
 	}
 
 	/**
+	 * Moves an uploaded .zip into the store. Validates it's a genuine HTTP upload
+	 * and a .zip, and keeps the original name (sanitize_file_name would mangle the
+	 * dotted host in the archive name). Returns the stored filename, or '' on
+	 * failure. The uploaded archive is validated for real on Preview (manifest).
+	 */
+	public function store_upload( string $tmp, string $name ): string {
+		if ( '' === $tmp || ! is_uploaded_file( $tmp ) ) {
+			return '';
+		}
+		$name = basename( $name );
+		if ( '' === $name || '.zip' !== strtolower( (string) substr( $name, -4 ) ) ) {
+			return '';
+		}
+		if ( ! $this->ensure_dir() ) {
+			return '';
+		}
+		$dest = $this->dir() . '/' . $name;
+		return move_uploaded_file( $tmp, $dest ) ? $name : '';
+	}
+
+	/**
 	 * Resolves a requested filename to a safe absolute path inside the store, or
 	 * an empty string if it escapes the directory or does not exist.
 	 */
