@@ -95,6 +95,63 @@ class RDBK_Restore {
 	}
 
 	/**
+	 * Sets up a restore job for an archive in the store (DB import phase).
+	 */
+	public function init_restore( RDBK_Job $job, string $name ): bool {
+		$path = RDBK_Storage::instance()->resolve_safe( $name );
+		if ( '' === $path ) {
+			return false;
+		}
+		if ( ! RDBK_DB_Import::instance()->init( $job, $path ) ) {
+			return false;
+		}
+		$job->set( 'r_phase', 'import' );
+		$job->set( 'r_file', basename( $path ) );
+		$job->set( 'progress', 0 );
+		$job->save();
+		return true;
+	}
+
+	/**
+	 * Advances the restore job: DB import, then finalize.
+	 */
+	public function step_restore( RDBK_Job $job ): void {
+		if ( 'import' === (string) $job->get( 'r_phase' ) ) {
+			$done = RDBK_DB_Import::instance()->step( $job );
+			$job->set( 'progress', min( 99, RDBK_DB_Import::instance()->progress( $job ) ) );
+			if ( $done ) {
+				$job->set( 'r_phase', 'finalize' );
+			}
+			$job->save();
+			return;
+		}
+
+		$this->finalize_restore( $job );
+	}
+
+	/**
+	 * Post-import cleanup: drop the work files, flush caches and rewrite rules.
+	 */
+	private function finalize_restore( RDBK_Job $job ): void {
+		RDBK_DB_Import::instance()->cleanup( $job );
+
+		wp_cache_flush();
+		delete_option( 'rewrite_rules' );
+
+		$job->set(
+			'stats',
+			array(
+				'file'       => (string) $job->get( 'r_file' ),
+				'statements' => (int) $job->get( 'imp_statements', 0 ),
+			)
+		);
+		$job->set( 'progress', 100 );
+		$job->set( 'r_phase', 'done' );
+		$job->set( 'status', 'done' );
+		$job->save();
+	}
+
+	/**
 	 * Streams the .sql entry and compares its sha256 with the manifest's.
 	 * Returns true/false, or null when the manifest carries no hash.
 	 */

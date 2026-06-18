@@ -392,9 +392,10 @@
 		} );
 	}
 
-	// --- Restore preview (PR5, read-only) ---
+	// --- Restore preview (PR5) + apply (PR6) ---
 	var previewBox = document.getElementById( 'rdbk-preview' );
 	var restoreList = document.querySelector( '.rdbk-restore-list' );
+	var currentFile = null;
 
 	function fmtBytes( n ) {
 		n = Number( n ) || 0;
@@ -460,7 +461,131 @@
 			'<tr><td>' + esc( i18n.contents || 'Contents' ) + '</td><td>' + esc( contents ) + '</td></tr>' +
 			'<tr><td>' + esc( i18n.integrity || 'Integrity' ) + '</td><td>' + integrityBadge( d.integrity ) + '</td></tr>' +
 			'</tbody></table>' +
-			'<h4>' + esc( i18n.warningsLbl || 'Warnings' ) + '</h4>' + warns;
+			'<h4>' + esc( i18n.warningsLbl || 'Warnings' ) + '</h4>' + warns +
+			restoreControlsHtml();
+		wireRestoreControls();
+	}
+
+	function restoreControlsHtml() {
+		return '<div class="rdbk-restore-apply">' +
+			'<div class="notice notice-warning inline"><p><strong>' + esc( i18n.restoreWarnTitle || 'Heads up:' ) + '</strong> ' +
+			esc( i18n.restoreWarn || 'This overwrites the current database. A full safety backup is taken first.' ) + '</p></div>' +
+			'<p><label>' + esc( i18n.typeRestore || 'Type RESTORE to confirm:' ) +
+			' <input type="text" id="rdbk-restore-confirm" autocomplete="off" spellcheck="false"></label> ' +
+			'<button type="button" class="button rdbk-danger" id="rdbk-restore-go" disabled>' +
+			esc( i18n.restoreBtn || 'Restore this backup' ) + '</button></p>' +
+			'<div class="rdbk-progress" id="rdbk-restore-progress" hidden>' +
+			'<div class="rdbk-progress__track"><div class="rdbk-progress__bar" id="rdbk-restore-bar" style="width:0%"></div></div>' +
+			'<p class="rdbk-progress__status" id="rdbk-restore-status" aria-live="polite"></p></div>' +
+			'<div id="rdbk-restore-msg"></div></div>';
+	}
+
+	function wireRestoreControls() {
+		var confirmInput = document.getElementById( 'rdbk-restore-confirm' );
+		var goBtn = document.getElementById( 'rdbk-restore-go' );
+		if ( ! confirmInput || ! goBtn ) {
+			return;
+		}
+		confirmInput.addEventListener( 'input', function () {
+			goBtn.disabled = ( 'RESTORE' !== confirmInput.value.trim() );
+		} );
+		goBtn.addEventListener( 'click', function () {
+			if ( ! goBtn.disabled ) {
+				doRestore( goBtn );
+			}
+		} );
+	}
+
+	// Runs a job (start → step … → done) and resolves with the final payload.
+	function runJob( type, extra, onProgress ) {
+		return new Promise( function ( resolve, reject ) {
+			function loop() {
+				post( 'rdbk_step' ).then( function ( r ) {
+					if ( ! r || ! r.success ) {
+						reject();
+						return;
+					}
+					var d = r.data || {};
+					if ( onProgress ) {
+						onProgress( d );
+					}
+					if ( d.done ) {
+						resolve( d );
+						return;
+					}
+					loop();
+				} ).catch( reject );
+			}
+			var payload = { type: type };
+			if ( extra ) {
+				Object.keys( extra ).forEach( function ( k ) {
+					payload[ k ] = extra[ k ];
+				} );
+			}
+			post( 'rdbk_start', payload ).then( function ( r ) {
+				if ( ! r || ! r.success ) {
+					reject();
+					return;
+				}
+				var d = r.data || {};
+				if ( onProgress ) {
+					onProgress( d );
+				}
+				if ( d.done ) {
+					resolve( d );
+					return;
+				}
+				loop();
+			} ).catch( reject );
+		} );
+	}
+
+	function doRestore( goBtn ) {
+		var prog = document.getElementById( 'rdbk-restore-progress' );
+		var bar = document.getElementById( 'rdbk-restore-bar' );
+		var status = document.getElementById( 'rdbk-restore-status' );
+		var msg = document.getElementById( 'rdbk-restore-msg' );
+
+		goBtn.disabled = true;
+		if ( prog ) {
+			prog.hidden = false;
+		}
+
+		function setBarP( d ) {
+			if ( bar ) {
+				bar.style.width = ( d.progress || 0 ) + '%';
+			}
+		}
+
+		if ( status ) {
+			status.textContent = i18n.safetyBackup || 'Creating safety backup…';
+		}
+
+		runJob( 'backup', { kind: 'safe' }, setBarP ).then( function () {
+			if ( bar ) {
+				bar.style.width = '0%';
+			}
+			if ( status ) {
+				status.textContent = i18n.restoring || 'Restoring…';
+			}
+			return runJob( 'restore', { file: currentFile }, setBarP );
+		} ).then( function () {
+			if ( bar ) {
+				bar.style.width = '100%';
+			}
+			if ( status ) {
+				status.textContent = '';
+			}
+			if ( msg ) {
+				msg.innerHTML = '<div class="notice notice-success inline"><p>' +
+					esc( i18n.restoreDone || 'Restore complete. Reload the page to see the restored site.' ) + '</p></div>';
+			}
+		} ).catch( function () {
+			if ( status ) {
+				status.textContent = i18n.failed || 'Failed.';
+			}
+			goBtn.disabled = false;
+		} );
 	}
 
 	if ( restoreList ) {
@@ -469,11 +594,12 @@
 			if ( ! btn ) {
 				return;
 			}
+			currentFile = btn.getAttribute( 'data-file' );
 			if ( previewBox ) {
 				previewBox.hidden = false;
 				previewBox.innerHTML = '<p>' + esc( i18n.previewing || 'Reading…' ) + '</p>';
 			}
-			post( 'rdbk_preview', { file: btn.getAttribute( 'data-file' ) } ).then( function ( r ) {
+			post( 'rdbk_preview', { file: currentFile } ).then( function ( r ) {
 				renderPreview( r && r.data );
 			} ).catch( function () {
 				renderPreview( null );

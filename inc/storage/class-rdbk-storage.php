@@ -104,14 +104,17 @@ class RDBK_Storage {
 	/**
 	 * Builds a fresh, unguessable archive filename.
 	 */
-	public function new_archive_name(): string {
+	public function new_archive_name( string $kind = '' ): string {
 		$host = wp_parse_url( home_url(), PHP_URL_HOST );
 		$host = $host ? preg_replace( '/[^a-zA-Z0-9.\-]/', '', $host ) : 'site';
 		// 8 bytes = 16 hex = 64 bits of entropy — unguessable over the web, while
 		// keeping the filename short. (The date/time in the name is NOT security:
 		// it's predictable; the random token is what protects the archive.)
 		$token = bin2hex( random_bytes( 8 ) );
-		return 'rd-backup-' . $host . '-' . gmdate( 'Ymd-His' ) . '-' . $token . '.zip';
+		// Optional kind tag (e.g. "safe" for pre-restore auto-backups, "auto" for
+		// scheduled ones) so the list can tell them apart at a glance.
+		$tag = ( '' !== $kind ) ? sanitize_key( $kind ) . '-' : '';
+		return 'rd-backup-' . $tag . $host . '-' . gmdate( 'Ymd-His' ) . '-' . $token . '.zip';
 	}
 
 	/**

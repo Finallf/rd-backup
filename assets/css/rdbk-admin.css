@@ -97,3 +97,24 @@
 .rdbk-warn-list li {
 	color: #8a6d1b;
 }
+
+.rdbk-restore-apply {
+	margin-top: 16px;
+	padding-top: 12px;
+	border-top: 1px solid #dcdcde;
+}
+
+.rdbk-restore-apply input[type="text"] {
+	width: 140px;
+}
+
+.rdbk-danger {
+	border-color: #b32d2e;
+	color: #b32d2e;
+}
+
+.rdbk-danger:not(:disabled):hover {
+	background: #b32d2e;
+	border-color: #b32d2e;
+	color: #fff;
+}

@@ -64,7 +64,16 @@ class RDBK_Runner {
 		if ( 'db_dump' === $type ) {
 			$this->db_dump_init( $job );
 		} elseif ( 'backup' === $type ) {
-			RDBK_Backup::instance()->init( $job );
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified in guard() before this runs.
+			$kind = isset( $_POST['kind'] ) ? sanitize_key( wp_unslash( $_POST['kind'] ) ) : '';
+			RDBK_Backup::instance()->init( $job, $kind );
+		} elseif ( 'restore' === $type ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified in guard() before this runs.
+			$file = isset( $_POST['file'] ) ? sanitize_text_field( wp_unslash( $_POST['file'] ) ) : '';
+			if ( ! RDBK_Restore::instance()->init_restore( $job, $file ) ) {
+				$job->clear();
+				wp_send_json_error( array( 'message' => __( 'Could not start the restore (archive not found or unreadable).', 'rd-backup' ) ), 400 );
+			}
 		}
 		wp_send_json_success( $this->payload( $job ) );
 	}
@@ -75,7 +84,7 @@ class RDBK_Runner {
 	private function requested_type(): string {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified in guard() before this runs.
 		$type = isset( $_POST['type'] ) ? sanitize_key( wp_unslash( $_POST['type'] ) ) : 'test';
-		return in_array( $type, array( 'test', 'db_dump', 'backup' ), true ) ? $type : 'test';
+		return in_array( $type, array( 'test', 'db_dump', 'backup', 'restore' ), true ) ? $type : 'test';
 	}
 
 	/**
@@ -102,6 +111,8 @@ class RDBK_Runner {
 		$type = (string) $job->get( 'type' );
 		if ( 'backup' === $type ) {
 			RDBK_Backup::instance()->step( $job );
+		} elseif ( 'restore' === $type ) {
+			RDBK_Restore::instance()->step_restore( $job );
 		} elseif ( 'db_dump' === $type ) {
 			$this->db_dump_step( $job );
 		} else {

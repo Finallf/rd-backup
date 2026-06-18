@@ -34,14 +34,14 @@ class RDBK_Backup {
 	/**
 	 * Sets up the work dir, the empty archive and the db phase.
 	 */
-	public function init( RDBK_Job $job ): void {
+	public function init( RDBK_Job $job, string $kind = '' ): void {
 		$storage = RDBK_Storage::instance();
 		$storage->ensure_dir();
 
 		$work = $storage->dir() . '/.work';
 		wp_mkdir_p( $work );
 
-		$final_name = $storage->new_archive_name();
+		$final_name = $storage->new_archive_name( $kind );
 		$sql_path   = $work . '/database.sql';
 		$zip_path   = $work . '/' . $final_name;
 
