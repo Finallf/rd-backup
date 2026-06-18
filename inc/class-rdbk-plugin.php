@@ -31,6 +31,9 @@ class RDBK_Plugin {
 		// context (where is_admin() is true), so it loads unconditionally.
 		RDBK_Runner::instance();
 		RDBK_Storage::instance();
+		// Self-updater: hooks the plugin-update transient, which is also checked in
+		// cron (non-admin), so it loads unconditionally.
+		RDBK_Updater::instance();
 
 		if ( is_admin() ) {
 			RDBK_Admin::instance();

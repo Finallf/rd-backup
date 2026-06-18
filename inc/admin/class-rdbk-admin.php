@@ -70,9 +70,10 @@ class RDBK_Admin {
 			'rdbk-admin',
 			'rdbkData',
 			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'rdbk_runner' ),
-				'i18n'    => array(
+				'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
+				'nonce'     => wp_create_nonce( 'rdbk_runner' ),
+				'updateUrl' => RDBK_Updater::instance()->update_url(),
+				'i18n'      => array(
 					'starting'         => __( 'Starting…', 'rd-backup' ),
 					'working'          => __( 'Working…', 'rd-backup' ),
 					'done'             => __( 'Done!', 'rd-backup' ),
@@ -106,6 +107,9 @@ class RDBK_Admin {
 					'uploadZipOnly'    => __( 'Only .zip backups can be uploaded.', 'rd-backup' ),
 					'uploading'        => __( 'Uploading…', 'rd-backup' ),
 					'uploadDone'       => __( 'Uploaded — refreshing…', 'rd-backup' ),
+					'updateNow'        => __( 'Update now', 'rd-backup' ),
+					'viewRelease'      => __( 'View release on GitHub', 'rd-backup' ),
+					'justNow'          => __( 'just now', 'rd-backup' ),
 				),
 			)
 		);
@@ -369,11 +373,21 @@ class RDBK_Admin {
 	}
 
 	private function render_health(): void {
-		$checks = RDBK_Healthcheck::run();
 		?>
 		<div class="rdbk-section-header">
+			<span class="dashicons dashicons-update" aria-hidden="true"></span>
+			<h2><?php esc_html_e( 'Updates', 'rd-backup' ); ?></h2>
+		</div>
+		<div class="rdbk-pdash">
+			<div class="rdbk-pgrid">
+				<?php $this->render_updates_card(); ?>
+			</div>
+		</div>
+
+		<?php $checks = RDBK_Healthcheck::run(); ?>
+		<div class="rdbk-section-header">
 			<span class="dashicons dashicons-heart" aria-hidden="true"></span>
-			<h2><?php esc_html_e( 'Health', 'rd-backup' ); ?></h2>
+			<h2><?php esc_html_e( 'Environment', 'rd-backup' ); ?></h2>
 		</div>
 		<div class="rdbk-pdash">
 			<div class="rdbk-pgrid">
@@ -404,6 +418,88 @@ class RDBK_Admin {
 					</table>
 				</div>
 			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * The "Release status" card (1:1 with the theme's updates card): current/latest
+	 * version, status badge, beta-channel switch, check + update-now controls.
+	 */
+	private function render_updates_card(): void {
+		$updater     = RDBK_Updater::instance();
+		$current     = RDBK_VERSION;
+		$beta        = 'beta' === $updater->channel();
+		$cached      = $updater->cached_release();
+		$latest      = is_array( $cached ) ? (string) ( $cached['version'] ?? '' ) : '';
+		$checked_at  = is_array( $cached ) ? (int) ( $cached['checked_at'] ?? 0 ) : 0;
+		$release_url = is_array( $cached ) ? (string) ( $cached['release_url'] ?? '' ) : '';
+
+		$has_update = '' !== $latest && version_compare( $latest, $current, '>' );
+		if ( '' === $latest ) {
+			$badge_variant = 'neutral';
+			$badge_text    = __( 'Never checked', 'rd-backup' );
+			$last_check    = __( 'never', 'rd-backup' );
+		} else {
+			$badge_variant = $has_update ? 'warning' : 'success';
+			$badge_text    = $has_update ? __( 'Update available', 'rd-backup' ) : __( 'Up to date', 'rd-backup' );
+			$last_check    = $checked_at > 0
+				/* translators: %s: human-readable time-ago, e.g. "2 hours" */
+				? sprintf( __( '%s ago', 'rd-backup' ), human_time_diff( $checked_at, time() ) )
+				: __( 'unknown', 'rd-backup' );
+		}
+		?>
+		<div class="rdbk-card rdbk-self-update">
+			<div class="rdbk-self-update__header">
+				<h3 class="rdbk-self-update__title"><?php esc_html_e( 'Release status', 'rd-backup' ); ?></h3>
+				<span class="rdbk-self-update__controls">
+					<span class="rdbk-self-update__channel">
+						<span class="rdbk-self-update__channel-label"><?php esc_html_e( 'Beta channel', 'rd-backup' ); ?></span>
+						<button type="button" class="rdbk-pswitch" role="switch" aria-checked="<?php echo $beta ? 'true' : 'false'; ?>" id="rdbk-beta-switch" data-nonce="<?php echo esc_attr( wp_create_nonce( 'rdbk_toggle_beta' ) ); ?>">
+							<span class="rdbk-pswitch__track"></span>
+							<span class="rdbk-pswitch__thumb"></span>
+							<span class="screen-reader-text"><?php esc_html_e( 'Beta channel', 'rd-backup' ); ?></span>
+						</button>
+					</span>
+					<button type="button" class="button" id="rdbk-update-check" data-nonce="<?php echo esc_attr( wp_create_nonce( 'rdbk_check_update' ) ); ?>">
+						<span class="dashicons dashicons-update" aria-hidden="true"></span>
+						<?php esc_html_e( 'Check for updates', 'rd-backup' ); ?>
+					</button>
+				</span>
+			</div>
+
+			<dl class="rdbk-self-update__grid">
+				<dt><?php esc_html_e( 'Current version', 'rd-backup' ); ?></dt>
+				<dd><code><?php echo esc_html( $current ); ?></code></dd>
+
+				<dt><?php esc_html_e( 'Latest version', 'rd-backup' ); ?></dt>
+				<dd>
+					<code id="rdbk-update-latest"><?php echo esc_html( '' !== $latest ? $latest : '—' ); ?></code>
+					<span id="rdbk-update-status"><span class="rdbk-badge rdbk-badge--<?php echo esc_attr( $badge_variant ); ?>"><?php echo esc_html( $badge_text ); ?></span></span>
+					<span id="rdbk-update-beta-badge"<?php echo $beta ? '' : ' hidden'; ?>><span class="rdbk-badge rdbk-badge--info"><?php esc_html_e( 'BETA', 'rd-backup' ); ?></span></span>
+				</dd>
+
+				<dt><?php esc_html_e( 'Last check', 'rd-backup' ); ?></dt>
+				<dd id="rdbk-update-last-check"><?php echo esc_html( $last_check ); ?></dd>
+			</dl>
+			<?php
+			echo '<p class="rdbk-self-update__action" id="rdbk-update-action">';
+			if ( $has_update ) {
+				printf(
+					'<a class="button button-primary rdbk-update-now" href="%1$s"><span class="dashicons dashicons-update" aria-hidden="true"></span>%2$s</a>',
+					esc_url( $updater->update_url() ),
+					esc_html__( 'Update now', 'rd-backup' )
+				);
+				if ( '' !== $release_url ) {
+					printf(
+						'<a class="button-link" href="%1$s" target="_blank" rel="noopener">%2$s</a>',
+						esc_url( $release_url ),
+						esc_html__( 'View release on GitHub', 'rd-backup' )
+					);
+				}
+			}
+			echo '</p>';
+			?>
 		</div>
 		<?php
 	}

@@ -550,4 +550,104 @@
 			xhr.send( body );
 		} );
 	}
+
+	// --- Updates card: beta-channel switch + check for updates ---
+	var betaSwitch = document.getElementById( 'rdbk-beta-switch' );
+	var updateCheckBtn = document.getElementById( 'rdbk-update-check' );
+	var updateLatest = document.getElementById( 'rdbk-update-latest' );
+	var updateStatus = document.getElementById( 'rdbk-update-status' );
+	var updateBetaBadge = document.getElementById( 'rdbk-update-beta-badge' );
+	var updateLastCheck = document.getElementById( 'rdbk-update-last-check' );
+	var updateAction = document.getElementById( 'rdbk-update-action' );
+
+	function setUpdateBadge( variant, text ) {
+		if ( updateStatus ) {
+			updateStatus.innerHTML = '<span class="rdbk-badge rdbk-badge--' + variant + '">' + esc( text ) + '</span>';
+		}
+	}
+
+	function renderUpdateAction( hasUpdate, releaseUrl ) {
+		if ( ! updateAction ) {
+			return;
+		}
+		if ( ! hasUpdate ) {
+			updateAction.innerHTML = '';
+			return;
+		}
+		var html = '<a class="button button-primary rdbk-update-now" href="' + esc( cfg.updateUrl || '#' ) + '">' +
+			'<span class="dashicons dashicons-update" aria-hidden="true"></span>' + esc( i18n.updateNow || 'Update now' ) + '</a>';
+		if ( releaseUrl ) {
+			html += '<a class="button-link" href="' + esc( releaseUrl ) + '" target="_blank" rel="noopener">' + esc( i18n.viewRelease || 'View release on GitHub' ) + '</a>';
+		}
+		updateAction.innerHTML = html;
+	}
+
+	function runUpdateCheck() {
+		if ( ! updateCheckBtn ) {
+			return;
+		}
+		updateCheckBtn.classList.add( 'is-loading' );
+		var body = new FormData();
+		body.append( 'action', 'rdbk_check_update' );
+		body.append( 'nonce', updateCheckBtn.getAttribute( 'data-nonce' ) );
+		fetch( cfg.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: body } ).then( function ( r ) {
+			return r.json();
+		} ).then( function ( res ) {
+			updateCheckBtn.classList.remove( 'is-loading' );
+			if ( ! res || ! res.success ) {
+				return;
+			}
+			var d = res.data || {};
+			if ( updateLatest ) {
+				updateLatest.textContent = d.latest || '—';
+			}
+			if ( updateLastCheck ) {
+				updateLastCheck.textContent = i18n.justNow || 'just now';
+			}
+			var variant = ! d.ok ? 'neutral' : ( d.hasUpdate ? 'warning' : 'success' );
+			setUpdateBadge( variant, d.status || '' );
+			renderUpdateAction( !! d.hasUpdate, d.releaseUrl || '' );
+		} ).catch( function () {
+			updateCheckBtn.classList.remove( 'is-loading' );
+		} );
+	}
+
+	if ( updateCheckBtn ) {
+		updateCheckBtn.addEventListener( 'click', runUpdateCheck );
+	}
+
+	if ( betaSwitch ) {
+		betaSwitch.addEventListener( 'click', function () {
+			if ( betaSwitch.classList.contains( 'is-loading' ) ) {
+				return;
+			}
+			var turningOn = 'true' !== betaSwitch.getAttribute( 'aria-checked' );
+			betaSwitch.classList.remove( 'is-error' );
+			betaSwitch.classList.add( 'is-loading' );
+
+			var body = new FormData();
+			body.append( 'action', 'rdbk_toggle_beta' );
+			body.append( 'nonce', betaSwitch.getAttribute( 'data-nonce' ) );
+			body.append( 'on', turningOn ? '1' : '0' );
+
+			fetch( cfg.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: body } ).then( function ( r ) {
+				return r.json();
+			} ).then( function ( res ) {
+				betaSwitch.classList.remove( 'is-loading' );
+				if ( ! res || ! res.success ) {
+					betaSwitch.classList.add( 'is-error' );
+					return;
+				}
+				var on = !! ( res.data && res.data.beta );
+				betaSwitch.setAttribute( 'aria-checked', on ? 'true' : 'false' );
+				if ( updateBetaBadge ) {
+					updateBetaBadge.hidden = ! on;
+				}
+				runUpdateCheck();
+			} ).catch( function () {
+				betaSwitch.classList.remove( 'is-loading' );
+				betaSwitch.classList.add( 'is-error' );
+			} );
+		} );
+	}
 } )();
