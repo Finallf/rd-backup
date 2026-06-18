@@ -112,7 +112,7 @@ class RDBK_Healthcheck {
 		$base = __( 'The backup store is protected by a random token + PHP-only download — works on any server.', 'rd-backup' );
 
 		if ( 'Apache' === $server || 'LiteSpeed' === $server ) {
-			return $base . ' ' . __( 'A .htaccess deny rule is written automatically too. Heads-up: if nginx fronts Apache (e.g. HestiaCP) it serves static files directly and may bypass the .htaccess — an optional nginx deny rule adds defense in depth.', 'rd-backup' );
+			return __( 'Token-protected backup, exclusive download, and .htaccess. Note: If Nginx runs before Apache (e.g., HestiaCP), it serves static files directly and ignores the .htaccess file. Create a rule in Nginx for extra protection.', 'rd-backup' );
 		}
 		if ( 'nginx' === $server ) {
 			return $base . ' ' . __( 'On nginx, optionally add a server-level deny rule (you control the config) for defense in depth.', 'rd-backup' );

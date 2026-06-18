@@ -222,7 +222,7 @@
 		previewBox.hidden = false;
 
 		if ( ! d || ! d.ok ) {
-			previewBox.innerHTML = '<div class="notice notice-error inline"><p>' + esc( ( d && d.error ) || i18n.failed || 'Failed.' ) + '</p></div>';
+			previewBox.innerHTML = '<div class="rdbk-status rdbk-status--danger">' + esc( ( d && d.error ) || i18n.failed || 'Failed.' ) + '</div>';
 			return;
 		}
 
@@ -247,7 +247,9 @@
 			( up.files || 0 ) + ' files (' + fmtBytes( up.bytes || 0 ) + ')';
 
 		previewBox.innerHTML =
-			'<h3><code>' + esc( d.file || '' ) + '</code></h3>' +
+			'<div class="rdbk-pgrid">' +
+			'<div class="rdbk-card">' +
+			'<p class="rdbk-card__desc"><code>' + esc( d.file || '' ) + '</code></p>' +
 			'<table class="widefat striped"><tbody>' +
 			'<tr><td>' + esc( i18n.origin || 'Origin' ) + '</td><td>' + esc( site.home_url || '' ) + '</td></tr>' +
 			'<tr><td>' + esc( i18n.created || 'Created' ) + '</td><td>' + esc( m.created_at || '' ) + '</td></tr>' +
@@ -256,20 +258,22 @@
 			'<tr><td>' + esc( i18n.integrity || 'Integrity' ) + '</td><td>' + integrityBadge( d.integrity ) + '</td></tr>' +
 			'</tbody></table>' +
 			'<h4>' + esc( i18n.warningsLbl || 'Warnings' ) + '</h4>' + warns +
-			restoreControlsHtml();
+			'</div>' +
+			restoreControlsHtml() +
+			'</div>';
 		wireRestoreControls();
 	}
 
 	function restoreControlsHtml() {
-		return '<div class="rdbk-restore-apply">' +
-			'<div class="notice notice-warning inline"><p><strong>' + esc( i18n.restoreWarnTitle || 'Heads up:' ) + '</strong> ' +
-			esc( i18n.restoreWarn || 'This overwrites the current database. A full safety backup is taken first. You will be signed out when it finishes (the restore replaces the users table) — just log back in.' ) + '</p></div>' +
+		return '<div class="rdbk-card rdbk-card--danger rdbk-restore-apply">' +
+			'<div class="rdbk-status rdbk-status--warning"><strong>' + esc( i18n.restoreWarnTitle || 'Heads up:' ) + '</strong> ' +
+			esc( i18n.restoreWarn || 'This overwrites the current database. A full safety backup is taken first. You will be signed out when it finishes (the restore replaces the users table) — just log back in.' ) + '</div>' +
 			'<p><label>' + esc( i18n.typeRestore || 'Type RESTORE to confirm:' ) +
 			' <input type="text" id="rdbk-restore-confirm" autocomplete="off" spellcheck="false"></label> ' +
 			'<button type="button" class="button rdbk-danger" id="rdbk-restore-go" disabled>' +
 			esc( i18n.restoreBtn || 'Restore this backup' ) + '</button></p>' +
 			'<div class="rdbk-progress" id="rdbk-restore-progress" hidden>' +
-			'<div class="rdbk-progress__track"><div class="rdbk-progress__bar" id="rdbk-restore-bar" style="width:0%"></div></div>' +
+			'<div class="rdbk-progress__track"><div class="rdbk-progress__bar" id="rdbk-restore-bar"></div></div>' +
 			'<p class="rdbk-progress__status" id="rdbk-restore-status" aria-live="polite"></p></div>' +
 			'<div id="rdbk-restore-msg"></div>' +
 			'<pre id="rdbk-restore-log" class="rdbk-log" hidden></pre></div>';
@@ -393,8 +397,8 @@
 			}
 			showLog( d && d.log );
 			if ( msg ) {
-				msg.innerHTML = '<div class="notice notice-success inline"><p>' +
-					esc( i18n.restoreDone || 'Restore complete. You may need to log in again — reload the page to see the restored site.' ) + '</p></div>';
+				msg.innerHTML = '<div class="rdbk-status rdbk-status--success">' +
+					esc( i18n.restoreDone || 'Restore complete. You may need to log in again — reload the page to see the restored site.' ) + '</div>';
 			}
 		} ).catch( function ( err ) {
 			var detail = ( err && err.status ) ? ( ' (HTTP ' + err.status + ')' ) : '';
@@ -402,8 +406,8 @@
 				status.textContent = ( i18n.failed || 'Failed.' ) + detail;
 			}
 			if ( msg ) {
-				msg.innerHTML = '<div class="notice notice-error inline"><p>' +
-					esc( ( i18n.failed || 'Failed.' ) + detail ) + '</p></div>';
+				msg.innerHTML = '<div class="rdbk-status rdbk-status--danger">' +
+					esc( ( i18n.failed || 'Failed.' ) + detail ) + '</div>';
 			}
 			goBtn.disabled = false;
 		} );

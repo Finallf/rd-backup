@@ -124,7 +124,18 @@ class RDBK_Admin {
 		}
 
 		echo '<div class="wrap rdbk-wrap">';
-		echo '<h1>' . esc_html__( 'ReloadeD Backup', 'rd-backup' ) . '</h1>';
+
+		echo '<div class="rdbk-panel-header">';
+		echo '<h1 class="rdbk-panel-title">' . esc_html__( 'ReloadeD Backup', 'rd-backup' ) . '</h1>';
+		// Logo slot — renders once the .webp is dropped at assets/img/logo-rdbk-panel.webp.
+		if ( file_exists( RDBK_PLUGIN_DIR . 'assets/img/logo-rdbk-panel.webp' ) ) {
+			printf(
+				'<img class="rdbk-panel-logo" src="%s" alt="%s">',
+				esc_url( RDBK_PLUGIN_URL . 'assets/img/logo-rdbk-panel.webp' ),
+				esc_attr__( 'ReloadeD Backup', 'rd-backup' )
+			);
+		}
+		echo '</div>';
 
 		echo '<h2 class="nav-tab-wrapper">';
 		foreach ( $tabs as $slug => $label ) {
@@ -145,7 +156,7 @@ class RDBK_Admin {
 		}
 		echo '</h2>';
 
-		echo '<div class="rdbk-tab-content">';
+		echo '<div class="rdbk-panel-form">';
 		switch ( $active ) {
 			case 'health':
 				$this->render_health();
@@ -164,61 +175,73 @@ class RDBK_Admin {
 
 	private function render_backup(): void {
 		?>
-		<h2><?php esc_html_e( 'Create a backup', 'rd-backup' ); ?></h2>
-		<p class="description">
-			<?php esc_html_e( 'Builds a complete .zip — the full database dump plus the uploads folder — and saves it to the store below.', 'rd-backup' ); ?>
-		</p>
-		<p>
-			<button type="button" class="button button-primary button-hero" id="rdbk-backup-run"><?php esc_html_e( 'Create backup', 'rd-backup' ); ?></button>
-			<span id="rdbk-backup-msg" class="rdbk-inline-msg" aria-live="polite"></span>
-		</p>
-		<div class="rdbk-progress" id="rdbk-backup-progress" hidden>
-			<div class="rdbk-progress__track">
-				<div class="rdbk-progress__bar" id="rdbk-backup-bar" style="width:0%"></div>
-			</div>
-			<p class="rdbk-progress__status" id="rdbk-backup-status" aria-live="polite"></p>
+		<div class="rdbk-section-header">
+			<span class="dashicons dashicons-database-export" aria-hidden="true"></span>
+			<h2><?php esc_html_e( 'Backup', 'rd-backup' ); ?></h2>
 		</div>
+		<div class="rdbk-pdash">
+			<div class="rdbk-pgrid">
+				<div class="rdbk-card">
+					<h3 class="rdbk-card__title"><?php esc_html_e( 'Create a backup', 'rd-backup' ); ?></h3>
+					<p class="rdbk-card__desc">
+						<?php esc_html_e( 'Builds a complete .zip — the full database dump plus the uploads folder — and saves it to the store below.', 'rd-backup' ); ?>
+					</p>
+					<p>
+						<button type="button" class="button button-primary button-hero" id="rdbk-backup-run"><?php esc_html_e( 'Create backup', 'rd-backup' ); ?></button>
+						<span id="rdbk-backup-msg" class="rdbk-inline-msg" aria-live="polite"></span>
+					</p>
+					<div class="rdbk-progress" id="rdbk-backup-progress" hidden>
+						<div class="rdbk-progress__track">
+							<div class="rdbk-progress__bar" id="rdbk-backup-bar"></div>
+						</div>
+						<p class="rdbk-progress__status" id="rdbk-backup-status" aria-live="polite"></p>
+					</div>
+				</div>
 
-		<hr>
+				<div class="rdbk-card">
+					<h3 class="rdbk-card__title"><?php esc_html_e( 'Backup store', 'rd-backup' ); ?></h3>
+					<p class="rdbk-card__desc">
+						<?php
+						printf(
+							/* translators: %s: absolute path to the store directory */
+							esc_html__( 'Backups are stored in %s — outside the plugin and outside uploads. Files carry a random token and are only downloadable through an authenticated handler, never a direct URL.', 'rd-backup' ),
+							'<code>' . esc_html( RDBK_Storage::instance()->dir() ) . '</code>'
+						);
+						?>
+					</p>
 
-		<h2><?php esc_html_e( 'Backup store', 'rd-backup' ); ?></h2>
-		<p class="description">
-			<?php
-			printf(
-				/* translators: %s: absolute path to the store directory */
-				esc_html__( 'Backups are stored in %s — outside the plugin and outside uploads. Files carry a random token and are only downloadable through an authenticated handler, never a direct URL.', 'rd-backup' ),
-				'<code>' . esc_html( RDBK_Storage::instance()->dir() ) . '</code>'
-			);
-			?>
-		</p>
+					<table class="widefat striped rdbk-archives">
+						<thead>
+							<tr>
+								<th><?php esc_html_e( 'File', 'rd-backup' ); ?></th>
+								<th><?php esc_html_e( 'Size', 'rd-backup' ); ?></th>
+								<th><?php esc_html_e( 'Date', 'rd-backup' ); ?></th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody id="rdbk-archives-body">
+							<?php $this->render_archive_rows( RDBK_Storage::instance()->list_archives() ); ?>
+						</tbody>
+					</table>
 
-		<table class="widefat striped rdbk-archives">
-			<thead>
-				<tr>
-					<th><?php esc_html_e( 'File', 'rd-backup' ); ?></th>
-					<th><?php esc_html_e( 'Size', 'rd-backup' ); ?></th>
-					<th><?php esc_html_e( 'Date', 'rd-backup' ); ?></th>
-					<th></th>
-				</tr>
-			</thead>
-			<tbody id="rdbk-archives-body">
-				<?php $this->render_archive_rows( RDBK_Storage::instance()->list_archives() ); ?>
-			</tbody>
-		</table>
+					<div class="rdbk-nginx-rule">
+						<p class="rdbk-card__hint">
+							<?php esc_html_e( 'Optional — for nginx (including nginx-in-front setups like HestiaCP, where the .htaccess can be bypassed), add this server-level deny rule for defense in depth:', 'rd-backup' ); ?>
+						</p>
+						<pre class="rdbk-snippet"><?php echo esc_html( RDBK_Storage::instance()->nginx_rule() ); ?></pre>
+					</div>
+				</div>
 
-		<h3><?php esc_html_e( 'Optional — nginx deny rule', 'rd-backup' ); ?></h3>
-		<p class="description">
-			<?php esc_html_e( 'Defense in depth for nginx (including nginx-in-front setups like HestiaCP, where the .htaccess can be bypassed). Add this to the site config:', 'rd-backup' ); ?>
-		</p>
-		<pre class="rdbk-snippet"><?php echo esc_html( RDBK_Storage::instance()->nginx_rule() ); ?></pre>
-
-		<hr>
-
-		<p>
-			<button type="button" class="button" id="rdbk-reset-job"><?php esc_html_e( 'Reset job state', 'rd-backup' ); ?></button>
-			<span id="rdbk-reset-msg" class="rdbk-inline-msg" aria-live="polite"></span>
-		</p>
-		<p class="description"><?php esc_html_e( 'Clears a stuck backup or restore job if one was interrupted. Your backups are not touched.', 'rd-backup' ); ?></p>
+				<div class="rdbk-card rdbk-card--placeholder">
+					<h3 class="rdbk-card__title"><?php esc_html_e( 'Maintenance', 'rd-backup' ); ?></h3>
+					<p>
+						<button type="button" class="button" id="rdbk-reset-job"><?php esc_html_e( 'Reset job state', 'rd-backup' ); ?></button>
+						<span id="rdbk-reset-msg" class="rdbk-inline-msg" aria-live="polite"></span>
+					</p>
+					<p class="rdbk-card__desc"><?php esc_html_e( 'Clears a stuck backup or restore job if one was interrupted. Your backups are not touched.', 'rd-backup' ); ?></p>
+				</div>
+			</div>
+		</div>
 		<?php
 	}
 
@@ -242,67 +265,76 @@ class RDBK_Admin {
 	}
 
 	private function render_restore(): void {
-		$archives = RDBK_Storage::instance()->list_archives();
-		?>
-		<h2><?php esc_html_e( 'Restore from a backup', 'rd-backup' ); ?></h2>
-		<p class="description">
-			<?php esc_html_e( 'Select a backup to inspect it. This is read-only: it validates the archive and previews what a restore would do — nothing is changed. To restore a backup from another site, drop its .zip into the store via SFTP and it shows up here.', 'rd-backup' ); ?>
-		</p>
-
-		<table class="widefat striped rdbk-restore-list">
-			<thead>
-				<tr>
-					<th><?php esc_html_e( 'Backup', 'rd-backup' ); ?></th>
-					<th><?php esc_html_e( 'Size', 'rd-backup' ); ?></th>
-					<th><?php esc_html_e( 'Date', 'rd-backup' ); ?></th>
-					<th></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php if ( empty( $archives ) ) : ?>
-					<tr><td colspan="4"><?php esc_html_e( 'No backups in the store yet — create one in the Backup tab, or drop a .zip via SFTP.', 'rd-backup' ); ?></td></tr>
-				<?php else : ?>
-					<?php foreach ( $archives as $item ) : ?>
-						<tr>
-							<td><code><?php echo esc_html( $item['name'] ); ?></code></td>
-							<td><?php echo esc_html( $item['sizeh'] ); ?></td>
-							<td><?php echo esc_html( $item['dateh'] ); ?></td>
-							<td><button type="button" class="button rdbk-preview-btn" data-file="<?php echo esc_attr( $item['name'] ); ?>"><?php esc_html_e( 'Preview', 'rd-backup' ); ?></button></td>
-						</tr>
-					<?php endforeach; ?>
-				<?php endif; ?>
-			</tbody>
-		</table>
-
-		<?php
+		$archives  = RDBK_Storage::instance()->list_archives();
 		$snapshots = RDBK_Storage::instance()->list_archives( 'safety' );
-		if ( ! empty( $snapshots ) ) :
-			?>
-			<h2><?php esc_html_e( 'Safety snapshots', 'rd-backup' ); ?></h2>
-			<p class="description">
-				<?php esc_html_e( 'Full backups taken automatically right before each restore (the last 2 are kept). Restore one to undo your last restore.', 'rd-backup' ); ?>
-			</p>
-			<table class="widefat striped rdbk-restore-list">
-				<thead>
-					<tr>
-						<th><?php esc_html_e( 'Snapshot', 'rd-backup' ); ?></th>
-						<th><?php esc_html_e( 'Size', 'rd-backup' ); ?></th>
-						<th><?php esc_html_e( 'Date', 'rd-backup' ); ?></th>
-						<th></th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php foreach ( $snapshots as $item ) : ?>
-						<tr>
-							<td><code><?php echo esc_html( $item['name'] ); ?></code></td>
-							<td><?php echo esc_html( $item['sizeh'] ); ?></td>
-							<td><?php echo esc_html( $item['dateh'] ); ?></td>
-							<td><button type="button" class="button rdbk-preview-btn" data-file="<?php echo esc_attr( $item['name'] ); ?>"><?php esc_html_e( 'Preview', 'rd-backup' ); ?></button></td>
-						</tr>
-					<?php endforeach; ?>
-				</tbody>
-			</table>
-		<?php endif; ?>
+		?>
+		<div class="rdbk-section-header">
+			<span class="dashicons dashicons-database-import" aria-hidden="true"></span>
+			<h2><?php esc_html_e( 'Restore', 'rd-backup' ); ?></h2>
+		</div>
+		<div class="rdbk-pdash">
+			<div class="rdbk-pgrid">
+				<div class="rdbk-card">
+					<h3 class="rdbk-card__title"><?php esc_html_e( 'Restore from a backup', 'rd-backup' ); ?></h3>
+					<p class="rdbk-card__desc">
+						<?php esc_html_e( 'Select a backup to inspect it. This is read-only: it validates the archive and previews what a restore would do — nothing is changed. To restore a backup from another site, drop its .zip into the store via SFTP and it shows up here.', 'rd-backup' ); ?>
+					</p>
+					<table class="widefat striped rdbk-restore-list">
+						<thead>
+							<tr>
+								<th><?php esc_html_e( 'Backup', 'rd-backup' ); ?></th>
+								<th><?php esc_html_e( 'Size', 'rd-backup' ); ?></th>
+								<th><?php esc_html_e( 'Date', 'rd-backup' ); ?></th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php if ( empty( $archives ) ) : ?>
+								<tr><td colspan="4"><?php esc_html_e( 'No backups in the store yet — create one in the Backup tab, or drop a .zip via SFTP.', 'rd-backup' ); ?></td></tr>
+							<?php else : ?>
+								<?php foreach ( $archives as $item ) : ?>
+									<tr>
+										<td><code><?php echo esc_html( $item['name'] ); ?></code></td>
+										<td><?php echo esc_html( $item['sizeh'] ); ?></td>
+										<td><?php echo esc_html( $item['dateh'] ); ?></td>
+										<td><button type="button" class="button button-small rdbk-preview-btn" data-file="<?php echo esc_attr( $item['name'] ); ?>"><?php esc_html_e( 'Preview', 'rd-backup' ); ?></button></td>
+									</tr>
+								<?php endforeach; ?>
+							<?php endif; ?>
+						</tbody>
+					</table>
+				</div>
+
+				<?php if ( ! empty( $snapshots ) ) : ?>
+					<div class="rdbk-card">
+						<h3 class="rdbk-card__title"><?php esc_html_e( 'Safety snapshots', 'rd-backup' ); ?></h3>
+						<p class="rdbk-card__desc">
+							<?php esc_html_e( 'Full backups taken automatically right before each restore (the last 2 are kept). Restore one to undo your last restore.', 'rd-backup' ); ?>
+						</p>
+						<table class="widefat striped rdbk-restore-list">
+							<thead>
+								<tr>
+									<th><?php esc_html_e( 'Snapshot', 'rd-backup' ); ?></th>
+									<th><?php esc_html_e( 'Size', 'rd-backup' ); ?></th>
+									<th><?php esc_html_e( 'Date', 'rd-backup' ); ?></th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								<?php foreach ( $snapshots as $item ) : ?>
+									<tr>
+										<td><code><?php echo esc_html( $item['name'] ); ?></code></td>
+										<td><?php echo esc_html( $item['sizeh'] ); ?></td>
+										<td><?php echo esc_html( $item['dateh'] ); ?></td>
+										<td><button type="button" class="button button-small rdbk-preview-btn" data-file="<?php echo esc_attr( $item['name'] ); ?>"><?php esc_html_e( 'Preview', 'rd-backup' ); ?></button></td>
+									</tr>
+								<?php endforeach; ?>
+							</tbody>
+						</table>
+					</div>
+				<?php endif; ?>
+			</div>
+		</div>
 
 		<div id="rdbk-preview" class="rdbk-preview" hidden></div>
 		<?php
@@ -310,25 +342,41 @@ class RDBK_Admin {
 
 	private function render_health(): void {
 		$checks = RDBK_Healthcheck::run();
-
-		echo '<table class="widefat striped rdbk-health">';
-		echo '<thead><tr>';
-		echo '<th>' . esc_html__( 'Check', 'rd-backup' ) . '</th>';
-		echo '<th>' . esc_html__( 'Result', 'rd-backup' ) . '</th>';
-		echo '<th>' . esc_html__( 'Notes', 'rd-backup' ) . '</th>';
-		echo '</tr></thead><tbody>';
-
-		foreach ( $checks as $check ) {
-			$status = isset( $check['status'] ) ? $check['status'] : 'ok';
-			printf(
-				'<tr><td>%s</td><td><span class="rdbk-badge rdbk-badge--%s">%s</span></td><td>%s</td></tr>',
-				esc_html( $check['label'] ),
-				esc_attr( $status ),
-				esc_html( $check['value'] ),
-				esc_html( $check['hint'] )
-			);
-		}
-
-		echo '</tbody></table>';
+		?>
+		<div class="rdbk-section-header">
+			<span class="dashicons dashicons-heart" aria-hidden="true"></span>
+			<h2><?php esc_html_e( 'Health', 'rd-backup' ); ?></h2>
+		</div>
+		<div class="rdbk-pdash">
+			<div class="rdbk-pgrid">
+				<div class="rdbk-card">
+					<h3 class="rdbk-card__title"><?php esc_html_e( 'Preflight checks', 'rd-backup' ); ?></h3>
+					<table class="widefat striped rdbk-health">
+						<thead>
+							<tr>
+								<th><?php esc_html_e( 'Check', 'rd-backup' ); ?></th>
+								<th><?php esc_html_e( 'Result', 'rd-backup' ); ?></th>
+								<th><?php esc_html_e( 'Notes', 'rd-backup' ); ?></th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php
+							foreach ( $checks as $check ) {
+								$status = isset( $check['status'] ) ? $check['status'] : 'ok';
+								printf(
+									'<tr><td>%s</td><td><span class="rdbk-badge rdbk-badge--%s">%s</span></td><td>%s</td></tr>',
+									esc_html( $check['label'] ),
+									esc_attr( $status ),
+									esc_html( $check['value'] ),
+									esc_html( $check['hint'] )
+								);
+							}
+							?>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		<?php
 	}
 }
