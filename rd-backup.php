@@ -37,6 +37,7 @@ require_once RDBK_PLUGIN_DIR . 'inc/backup/class-rdbk-manifest.php';
 require_once RDBK_PLUGIN_DIR . 'inc/backup/class-rdbk-backup.php';
 require_once RDBK_PLUGIN_DIR . 'inc/restore/class-rdbk-db-import.php';
 require_once RDBK_PLUGIN_DIR . 'inc/restore/class-rdbk-uploads-extract.php';
+require_once RDBK_PLUGIN_DIR . 'inc/restore/class-rdbk-search-replace.php';
 require_once RDBK_PLUGIN_DIR . 'inc/restore/class-rdbk-restore.php';
 require_once RDBK_PLUGIN_DIR . 'inc/admin/class-rdbk-healthcheck.php';
 require_once RDBK_PLUGIN_DIR . 'inc/admin/class-rdbk-admin.php';

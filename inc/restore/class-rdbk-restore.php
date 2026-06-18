@@ -108,9 +108,29 @@ class RDBK_Restore {
 		$job->set( 'r_phase', 'import' );
 		$job->set( 'r_file', basename( $path ) );
 		$job->set( 'r_zip', $path );
+		$job->set( 'r_origin', $this->read_origin( $path ) );
 		$job->set( 'progress', 0 );
 		$job->save();
 		return true;
+	}
+
+	/**
+	 * Reads the origin home_url from the archive's manifest (for search-replace).
+	 */
+	private function read_origin( string $zip_path ): string {
+		$zip = new ZipArchive();
+		if ( true !== $zip->open( $zip_path ) ) {
+			return '';
+		}
+		$json = $zip->getFromName( 'manifest.json' );
+		$zip->close();
+		if ( false === $json ) {
+			return '';
+		}
+		$manifest = json_decode( $json, true );
+		return ( is_array( $manifest ) && isset( $manifest['site']['home_url'] ) )
+			? (string) $manifest['site']['home_url']
+			: '';
 	}
 
 	/**
@@ -121,7 +141,18 @@ class RDBK_Restore {
 
 		if ( 'import' === $phase ) {
 			$done = RDBK_DB_Import::instance()->step( $job );
-			$job->set( 'progress', (int) round( RDBK_DB_Import::instance()->progress( $job ) * 0.6 ) );
+			$job->set( 'progress', (int) round( RDBK_DB_Import::instance()->progress( $job ) * 0.5 ) );
+			if ( $done ) {
+				RDBK_Search_Replace::instance()->init( $job );
+				$job->set( 'r_phase', 'replace' );
+			}
+			$job->save();
+			return;
+		}
+
+		if ( 'replace' === $phase ) {
+			$done = RDBK_Search_Replace::instance()->step( $job );
+			$job->set( 'progress', 50 + (int) round( RDBK_Search_Replace::instance()->progress( $job ) * 0.2 ) );
 			if ( $done ) {
 				RDBK_Uploads_Extract::instance()->init( $job, (string) $job->get( 'r_zip' ) );
 				$job->set( 'r_phase', 'uploads' );
@@ -132,7 +163,7 @@ class RDBK_Restore {
 
 		if ( 'uploads' === $phase ) {
 			$done = RDBK_Uploads_Extract::instance()->step( $job );
-			$job->set( 'progress', 60 + (int) round( RDBK_Uploads_Extract::instance()->progress( $job ) * 0.39 ) );
+			$job->set( 'progress', 70 + (int) round( RDBK_Uploads_Extract::instance()->progress( $job ) * 0.29 ) );
 			if ( $done ) {
 				$job->set( 'r_phase', 'finalize' );
 			}
@@ -158,6 +189,7 @@ class RDBK_Restore {
 				'file'       => (string) $job->get( 'r_file' ),
 				'statements' => (int) $job->get( 'imp_statements', 0 ),
 				'files'      => (int) $job->get( 'up_total', 0 ),
+				'replaced'   => (int) $job->get( 'sr_changed', 0 ),
 			)
 		);
 		$job->set( 'progress', 100 );
