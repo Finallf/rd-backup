@@ -100,12 +100,12 @@ class RDBK_Admin {
 					'warningsLbl'      => __( 'Warnings', 'rd-backup' ),
 					'noWarnings'       => __( 'No compatibility warnings.', 'rd-backup' ),
 					'restoreWarnTitle' => __( 'Heads up:', 'rd-backup' ),
-					'restoreWarn'      => __( 'This overwrites the current database. A full safety backup is taken first.', 'rd-backup' ),
+					'restoreWarn'      => __( 'This overwrites the current database. A full safety backup is taken first. You will be signed out when it finishes (the restore replaces the users table) — just log back in.', 'rd-backup' ),
 					'typeRestore'      => __( 'Type RESTORE to confirm:', 'rd-backup' ),
 					'restoreBtn'       => __( 'Restore this backup', 'rd-backup' ),
 					'safetyBackup'     => __( 'Creating safety backup…', 'rd-backup' ),
 					'restoring'        => __( 'Restoring…', 'rd-backup' ),
-					'restoreDone'      => __( 'Restore complete. Reload the page to see the restored site.', 'rd-backup' ),
+					'restoreDone'      => __( 'Restore complete. You may need to log in again — reload the page to see the restored site.', 'rd-backup' ),
 				),
 			)
 		);

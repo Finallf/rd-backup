@@ -53,6 +53,7 @@ class RDBK_Backup {
 		$job->set( 'zip_path', $zip_path );
 		$job->set( 'final_name', $final_name );
 		$job->set( 'progress', 0 );
+		$job->log( ( '' !== $kind ? 'Safety backup' : 'Backup' ) . ' started — dumping database…' );
 		$job->save();
 	}
 
@@ -121,6 +122,7 @@ class RDBK_Backup {
 		}
 
 		$size = file_exists( $final_path ) ? (int) filesize( $final_path ) : 0;
+		$job->log( 'Backup created: ' . $final_name . ' (' . size_format( $size ) . ').' );
 		$job->set(
 			'stats',
 			array(

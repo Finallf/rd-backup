@@ -34,6 +34,10 @@ class RDBK_Runner {
 	private function __construct() {
 		add_action( 'wp_ajax_rdbk_start', array( $this, 'ajax_start' ) );
 		add_action( 'wp_ajax_rdbk_step', array( $this, 'ajax_step' ) );
+		// nopriv too: a restore logs the admin out mid-run (it swaps siteurl, which
+		// changes COOKIEHASH and orphans the auth cookie). The per-job secret keeps
+		// the step loop authorized through that window — see authorize_step().
+		add_action( 'wp_ajax_nopriv_rdbk_step', array( $this, 'ajax_step' ) );
 		add_action( 'wp_ajax_rdbk_cancel', array( $this, 'ajax_cancel' ) );
 		add_action( 'wp_ajax_rdbk_test_storage', array( $this, 'ajax_test_storage' ) );
 		add_action( 'wp_ajax_rdbk_delete_archive', array( $this, 'ajax_delete_archive' ) );
@@ -50,6 +54,23 @@ class RDBK_Runner {
 		check_ajax_referer( 'rdbk_runner', 'nonce' );
 	}
 
+	/**
+	 * Authorizes a step. A restore swaps the whole database, which changes
+	 * siteurl → COOKIEHASH and logs the admin out mid-run; the per-job secret
+	 * (issued to the browser by the authenticated start) keeps the loop alive
+	 * without the auth cookie or nonce. Falls back to the normal cap+nonce gate
+	 * when no valid secret is presented.
+	 */
+	private function authorize_step( RDBK_Job $job ): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- the per-job secret is the auth here (hash_equals below); the cap+nonce gate is the fallback.
+		$secret   = isset( $_POST['secret'] ) ? sanitize_text_field( wp_unslash( $_POST['secret'] ) ) : '';
+		$expected = (string) $job->get( 'secret', '' );
+		if ( '' !== $expected && '' !== $secret && hash_equals( $expected, $secret ) ) {
+			return;
+		}
+		$this->guard();
+	}
+
 	public function ajax_start(): void {
 		$this->guard();
 		$type = $this->requested_type();
@@ -57,12 +78,9 @@ class RDBK_Runner {
 			wp_send_json_error( array( 'message' => __( 'Unknown job type.', 'rd-backup' ) ), 400 );
 		}
 
-		// One job at a time: resume the running one instead of starting another.
-		$existing = RDBK_Job::load();
-		if ( $existing && 'running' === $existing->get( 'status' ) ) {
-			wp_send_json_success( $this->payload( $existing ) );
-		}
-
+		// Always start fresh: resuming a stale job across page loads is fragile
+		// (the browser would have lost the per-job secret anyway), and a leftover
+		// 'running' job from a crashed run would otherwise block every new start.
 		$job = RDBK_Job::start( $type );
 		if ( 'db_dump' === $type ) {
 			$this->db_dump_init( $job );
@@ -104,12 +122,11 @@ class RDBK_Runner {
 	}
 
 	public function ajax_step(): void {
-		$this->guard();
-
 		$job = RDBK_Job::load();
 		if ( ! $job ) {
 			wp_send_json_error( array( 'message' => __( 'No active job.', 'rd-backup' ) ), 404 );
 		}
+		$this->authorize_step( $job );
 
 		$type = (string) $job->get( 'type' );
 		if ( 'backup' === $type ) {
@@ -212,10 +229,12 @@ class RDBK_Runner {
 	private function payload( RDBK_Job $job ): array {
 		return array(
 			'status'   => (string) $job->get( 'status' ),
-			'phase'    => (string) $job->get( 'phase' ),
+			'phase'    => (string) $job->get( 'r_phase', (string) $job->get( 'phase', '' ) ),
 			'progress' => (int) $job->get( 'progress', 0 ),
 			'done'     => 'done' === $job->get( 'status' ),
 			'stats'    => $job->get( 'stats' ),
+			'log'      => (array) $job->get( 'log', array() ),
+			'secret'   => (string) $job->get( 'secret', '' ),
 		);
 	}
 }

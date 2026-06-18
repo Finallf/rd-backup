@@ -45,10 +45,14 @@ class RDBK_Search_Replace {
 		global $wpdb;
 
 		$from = (string) $job->get( 'r_origin' );
-		$to   = home_url();
+		$to   = (string) $job->get( 'r_dest' );
+		if ( '' === $to ) {
+			$to = home_url();
+		}
 
 		if ( '' === $from || $from === $to ) {
 			$job->set( 'sr_skip', true );
+			$job->log( 'Search-replace skipped (same domain: ' . $to . ').' );
 			$job->save();
 			return;
 		}
@@ -74,6 +78,7 @@ class RDBK_Search_Replace {
 		$job->set( 'sr_table_index', 0 );
 		$job->set( 'sr_row_offset', 0 );
 		$job->set( 'sr_changed', 0 );
+		$job->log( 'Search-replace: ' . $from . ' → ' . $to . ' across ' . count( $list ) . ' tables…' );
 		$job->save();
 	}
 

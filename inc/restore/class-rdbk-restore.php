@@ -109,9 +109,56 @@ class RDBK_Restore {
 		$job->set( 'r_file', basename( $path ) );
 		$job->set( 'r_zip', $path );
 		$job->set( 'r_origin', $this->read_origin( $path ) );
+		// Capture NOW, before the import overwrites wp_options (home_url) and
+		// wp_usermeta (the current session token).
+		$uid = get_current_user_id();
+		$job->set( 'r_dest', home_url() );
+		$job->set( 'r_user', $uid );
+		$job->set( 'r_tokens', get_user_meta( $uid, 'session_tokens', true ) );
 		$job->set( 'progress', 0 );
+		$job->log( 'Restore started: ' . basename( $path ) . ' — DB import…' );
 		$job->save();
 		return true;
+	}
+
+	/**
+	 * Keeps the admin logged in across the wp_usermeta import. The import
+	 * overwrites the current user's session_tokens (via mysqli, bypassing WP's
+	 * object cache), which invalidates the auth cookie and 403s the remaining
+	 * AJAX steps. wp_set_auth_cookie() is no help here — admin-ajax has already
+	 * sent its headers, so a fresh Set-Cookie never reaches the browser. Instead
+	 * we re-write the ORIGINAL session_tokens straight into usermeta each import
+	 * step, so the cookie the browser already holds stays valid.
+	 */
+	private function keep_session( RDBK_Job $job ): void {
+		global $wpdb;
+
+		$uid    = (int) $job->get( 'r_user', 0 );
+		$tokens = $job->get( 'r_tokens' );
+		if ( $uid <= 0 || empty( $tokens ) ) {
+			return;
+		}
+
+		$value = maybe_serialize( $tokens );
+		// phpcs:disable WordPress.DB.SlowDBQuery -- 'session_tokens' is one fixed key for one user, not a meta scan.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the import bypassed WP's cache, so update_user_meta would see the stale value and no-op; write straight to usermeta.
+		$id = $wpdb->get_var( $wpdb->prepare( "SELECT umeta_id FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key = 'session_tokens' LIMIT 1", $uid ) );
+		if ( null !== $id ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- see above.
+			$wpdb->update( $wpdb->usermeta, array( 'meta_value' => $value ), array( 'umeta_id' => (int) $id ) );
+		} else {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- see above.
+			$wpdb->insert(
+				$wpdb->usermeta,
+				array(
+					'user_id'    => $uid,
+					'meta_key'   => 'session_tokens',
+					'meta_value' => $value,
+				)
+			);
+		}
+		// phpcs:enable WordPress.DB.SlowDBQuery
+		clean_user_cache( $uid );
 	}
 
 	/**
@@ -141,8 +188,10 @@ class RDBK_Restore {
 
 		if ( 'import' === $phase ) {
 			$done = RDBK_DB_Import::instance()->step( $job );
+			$this->keep_session( $job );
 			$job->set( 'progress', (int) round( RDBK_DB_Import::instance()->progress( $job ) * 0.5 ) );
 			if ( $done ) {
+				$job->log( 'DB import done (' . (int) $job->get( 'imp_statements', 0 ) . ' statements).' );
 				RDBK_Search_Replace::instance()->init( $job );
 				$job->set( 'r_phase', 'replace' );
 			}
@@ -154,7 +203,9 @@ class RDBK_Restore {
 			$done = RDBK_Search_Replace::instance()->step( $job );
 			$job->set( 'progress', 50 + (int) round( RDBK_Search_Replace::instance()->progress( $job ) * 0.2 ) );
 			if ( $done ) {
+				$job->log( 'Search-replace done (' . (int) $job->get( 'sr_changed', 0 ) . ' rows changed).' );
 				RDBK_Uploads_Extract::instance()->init( $job, (string) $job->get( 'r_zip' ) );
+				$job->log( 'Extracting uploads (' . (int) $job->get( 'up_total', 0 ) . ' files)…' );
 				$job->set( 'r_phase', 'uploads' );
 			}
 			$job->save();
@@ -183,6 +234,7 @@ class RDBK_Restore {
 		wp_cache_flush();
 		delete_option( 'rewrite_rules' );
 
+		$job->log( 'Restore complete.' );
 		$job->set(
 			'stats',
 			array(

@@ -33,7 +33,21 @@
 			credentials: 'same-origin',
 			body: body
 		} ).then( function ( res ) {
-			return res.json();
+			return res.text().then( function ( text ) {
+				var data = null;
+				try {
+					data = JSON.parse( text );
+				} catch ( e ) {
+					data = null;
+				}
+				if ( ! res.ok ) {
+					var err = new Error( 'HTTP ' + res.status );
+					err.status = res.status;
+					err.body = text;
+					throw err;
+				}
+				return data;
+			} );
 		} );
 	}
 
@@ -469,7 +483,7 @@
 	function restoreControlsHtml() {
 		return '<div class="rdbk-restore-apply">' +
 			'<div class="notice notice-warning inline"><p><strong>' + esc( i18n.restoreWarnTitle || 'Heads up:' ) + '</strong> ' +
-			esc( i18n.restoreWarn || 'This overwrites the current database. A full safety backup is taken first.' ) + '</p></div>' +
+			esc( i18n.restoreWarn || 'This overwrites the current database. A full safety backup is taken first. You will be signed out when it finishes (the restore replaces the users table) — just log back in.' ) + '</p></div>' +
 			'<p><label>' + esc( i18n.typeRestore || 'Type RESTORE to confirm:' ) +
 			' <input type="text" id="rdbk-restore-confirm" autocomplete="off" spellcheck="false"></label> ' +
 			'<button type="button" class="button rdbk-danger" id="rdbk-restore-go" disabled>' +
@@ -477,7 +491,8 @@
 			'<div class="rdbk-progress" id="rdbk-restore-progress" hidden>' +
 			'<div class="rdbk-progress__track"><div class="rdbk-progress__bar" id="rdbk-restore-bar" style="width:0%"></div></div>' +
 			'<p class="rdbk-progress__status" id="rdbk-restore-status" aria-live="polite"></p></div>' +
-			'<div id="rdbk-restore-msg"></div></div>';
+			'<div id="rdbk-restore-msg"></div>' +
+			'<pre id="rdbk-restore-log" class="rdbk-log" hidden></pre></div>';
 	}
 
 	function wireRestoreControls() {
@@ -497,10 +512,13 @@
 	}
 
 	// Runs a job (start → step … → done) and resolves with the final payload.
+	// The per-job secret returned by start authorizes each step even after a
+	// restore logs the admin out mid-run (siteurl swap → COOKIEHASH → no cookie).
 	function runJob( type, extra, onProgress ) {
 		return new Promise( function ( resolve, reject ) {
+			var secret = '';
 			function loop() {
-				post( 'rdbk_step' ).then( function ( r ) {
+				post( 'rdbk_step', { secret: secret } ).then( function ( r ) {
 					if ( ! r || ! r.success ) {
 						reject();
 						return;
@@ -528,6 +546,7 @@
 					return;
 				}
 				var d = r.data || {};
+				secret = d.secret || '';
 				if ( onProgress ) {
 					onProgress( d );
 				}
@@ -545,44 +564,66 @@
 		var bar = document.getElementById( 'rdbk-restore-bar' );
 		var status = document.getElementById( 'rdbk-restore-status' );
 		var msg = document.getElementById( 'rdbk-restore-msg' );
+		var logEl = document.getElementById( 'rdbk-restore-log' );
 
 		goBtn.disabled = true;
 		if ( prog ) {
 			prog.hidden = false;
 		}
+		if ( logEl ) {
+			logEl.hidden = false;
+			logEl.textContent = '';
+		}
 
-		function setBarP( d ) {
+		function showLog( lines ) {
+			if ( logEl && lines && lines.length ) {
+				logEl.textContent = lines.join( '\n' );
+				logEl.scrollTop = logEl.scrollHeight;
+			}
+		}
+
+		function onProgress( d ) {
 			if ( bar ) {
 				bar.style.width = ( d.progress || 0 ) + '%';
 			}
+			if ( status ) {
+				status.textContent = ( d.phase || '' ) + ' ' + ( d.progress || 0 ) + '%';
+			}
+			showLog( d.log );
 		}
 
 		if ( status ) {
 			status.textContent = i18n.safetyBackup || 'Creating safety backup…';
 		}
 
-		runJob( 'backup', { kind: 'safe' }, setBarP ).then( function () {
+		runJob( 'backup', { kind: 'safe' }, onProgress ).then( function () {
 			if ( bar ) {
 				bar.style.width = '0%';
 			}
 			if ( status ) {
 				status.textContent = i18n.restoring || 'Restoring…';
 			}
-			return runJob( 'restore', { file: currentFile }, setBarP );
-		} ).then( function () {
+			return runJob( 'restore', { file: currentFile }, onProgress );
+		} ).then( function ( d ) {
 			if ( bar ) {
 				bar.style.width = '100%';
 			}
 			if ( status ) {
 				status.textContent = '';
 			}
+			showLog( d && d.log );
 			if ( msg ) {
 				msg.innerHTML = '<div class="notice notice-success inline"><p>' +
-					esc( i18n.restoreDone || 'Restore complete. Reload the page to see the restored site.' ) + '</p></div>';
+					esc( i18n.restoreDone || 'Restore complete. You may need to log in again — reload the page to see the restored site.' ) + '</p></div>';
 			}
-		} ).catch( function () {
+		} ).catch( function ( err ) {
+			var detail = ( err && err.status ) ? ( ' (HTTP ' + err.status + ')' ) : '';
 			if ( status ) {
-				status.textContent = i18n.failed || 'Failed.';
+				status.textContent = ( i18n.failed || 'Failed.' ) + detail;
+			}
+			if ( msg ) {
+				msg.innerHTML = '<div class="notice notice-error inline"><p>' +
+					esc( ( i18n.failed || 'Failed.' ) + detail ) + '</p></div>';
 			}
 			goBtn.disabled = false;
 		} );
