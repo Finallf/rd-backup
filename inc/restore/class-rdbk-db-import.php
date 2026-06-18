@@ -63,6 +63,7 @@ class RDBK_DB_Import {
 		$job->set( 'imp_offset', 0 );
 		$job->set( 'imp_size', (int) filesize( $sql_path ) );
 		$job->set( 'imp_statements', 0 );
+		$job->set( 'imp_failed', 0 );
 		$job->save();
 		return true;
 	}
@@ -81,10 +82,10 @@ class RDBK_DB_Import {
 			return true;
 		}
 
-		// Raw exec via the live mysqli handle — NOT $wpdb->query(): for non-ASCII
-		// queries $wpdb runs strip_invalid_text / add_placeholder_escape, which
-		// rewrites every literal "%" into its placeholder hash and corrupts values
-		// like the permalink structure "/%postname%/". See exec().
+		// FK checks off so tables can be (re)created in dump order. Statements run
+		// through $wpdb->query() below; the dump already escapes values with
+		// mysqli_real_escape_string, so there's no literal-% mangling to dodge here
+		// (query() doesn't add placeholder-escapes — only prepare() does).
 		$dbh = $wpdb->dbh;
 		$this->exec( $dbh, 'SET FOREIGN_KEY_CHECKS = 0' );
 
@@ -96,6 +97,10 @@ class RDBK_DB_Import {
 			return true;
 		}
 		fseek( $fh, $offset );
+
+		// Best-effort: swallow a failing statement (don't echo its error into the
+		// AJAX response or abort) — count it and move on, logged when the import ends.
+		$prev_suppress = $wpdb->suppress_errors( true );
 
 		$start  = time();
 		$buffer = '';
@@ -119,8 +124,11 @@ class RDBK_DB_Import {
 				$buffer = '';
 				if ( '' !== $stmt ) {
 					// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- executing a trusted backup dump.
-					$wpdb->query( $stmt );
+					$result = $wpdb->query( $stmt );
 					++$count;
+					if ( false === $result ) {
+						$this->record_failure( $job, $stmt );
+					}
 				}
 				$offset = ftell( $fh );
 				if ( time() - $start >= self::TIME_BUDGET ) {
@@ -130,6 +138,7 @@ class RDBK_DB_Import {
 		}
 		fclose( $fh );
 		// phpcs:enable WordPress.WP.AlternativeFunctions.file_system_operations_fopen, WordPress.WP.AlternativeFunctions.file_system_operations_fread, WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+		$wpdb->suppress_errors( $prev_suppress );
 
 		$job->set( 'imp_offset', $offset );
 		$job->set( 'imp_statements', $count );
@@ -139,14 +148,22 @@ class RDBK_DB_Import {
 	}
 
 	/**
-	 * Executes one raw statement on the live mysqli handle.
-	 *
-	 * We deliberately bypass $wpdb->query(): for non-ASCII queries it runs
-	 * strip_invalid_text / add_placeholder_escape, which rewrites every literal
-	 * "%" into $wpdb's placeholder hash — corrupting values such as the permalink
-	 * structure "/%postname%/". Going straight to mysqli keeps the dump verbatim.
-	 * Best-effort: a single failing statement must not abort the restore (the
-	 * pre-restore safety backup is the net).
+	 * Records a failed statement on the job: a running count plus a short, capped
+	 * list of samples (table / first chars), so a best-effort skip isn't silent —
+	 * the restore logs the summary when the import finishes.
+	 */
+	private function record_failure( RDBK_Job $job, string $stmt ): void {
+		$job->set( 'imp_failed', (int) $job->get( 'imp_failed', 0 ) + 1 );
+		$samples = (array) $job->get( 'imp_failed_samples', array() );
+		if ( count( $samples ) < 10 ) {
+			$samples[] = substr( (string) preg_replace( '/\s+/', ' ', $stmt ), 0, 80 );
+			$job->set( 'imp_failed_samples', $samples );
+		}
+	}
+
+	/**
+	 * Runs a single control statement on the live mysqli handle (used to toggle FK
+	 * checks). Best-effort: a failure here must not abort the import.
 	 *
 	 * @param mysqli|null $dbh The live database handle ($wpdb->dbh).
 	 */

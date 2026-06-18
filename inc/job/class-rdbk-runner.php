@@ -91,7 +91,7 @@ class RDBK_Runner {
 				wp_send_json_error( array( 'message' => __( 'Could not start the restore (archive not found or unreadable).', 'rd-backup' ) ), 400 );
 			}
 		}
-		wp_send_json_success( $this->payload( $job ) );
+		wp_send_json_success( $this->payload( $job, true ) );
 	}
 
 	/**
@@ -117,7 +117,14 @@ class RDBK_Runner {
 			RDBK_Restore::instance()->step_restore( $job );
 		}
 
-		wp_send_json_success( $this->payload( $job ) );
+		$payload = $this->payload( $job );
+		// Once the job is done, drop the job file: it holds the per-job secret and
+		// (for a restore) the session token. The final payload is already captured
+		// above, and a fresh run always creates a new job file.
+		if ( 'done' === $job->get( 'status' ) ) {
+			$job->clear();
+		}
+		wp_send_json_success( $payload );
 	}
 
 	public function ajax_cancel(): void {
@@ -156,15 +163,20 @@ class RDBK_Runner {
 	/**
 	 * Normalizes the job state into the JSON payload the UI consumes.
 	 */
-	private function payload( RDBK_Job $job ): array {
-		return array(
+	private function payload( RDBK_Job $job, bool $with_secret = false ): array {
+		$payload = array(
 			'status'   => (string) $job->get( 'status' ),
 			'phase'    => (string) $job->get( 'r_phase', (string) $job->get( 'phase', '' ) ),
 			'progress' => (int) $job->get( 'progress', 0 ),
 			'done'     => 'done' === $job->get( 'status' ),
 			'stats'    => $job->get( 'stats' ),
 			'log'      => (array) $job->get( 'log', array() ),
-			'secret'   => (string) $job->get( 'secret', '' ),
 		);
+		// The per-job secret is handed out once (on start) and reused by every
+		// step — no need to echo it back in each step response.
+		if ( $with_secret ) {
+			$payload['secret'] = (string) $job->get( 'secret', '' );
+		}
+		return $payload;
 	}
 }

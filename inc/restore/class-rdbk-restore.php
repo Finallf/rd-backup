@@ -191,7 +191,14 @@ class RDBK_Restore {
 			$this->keep_session( $job );
 			$job->set( 'progress', (int) round( RDBK_DB_Import::instance()->progress( $job ) * 0.5 ) );
 			if ( $done ) {
-				$job->log( 'DB import done (' . (int) $job->get( 'imp_statements', 0 ) . ' statements).' );
+				$failed = (int) $job->get( 'imp_failed', 0 );
+				$job->log(
+					'DB import done (' . (int) $job->get( 'imp_statements', 0 ) . ' statements'
+					. ( $failed > 0 ? ', ' . $failed . ' failed' : '' ) . ').'
+				);
+				foreach ( (array) $job->get( 'imp_failed_samples', array() ) as $sample ) {
+					$job->log( '  ✗ ' . $sample );
+				}
 				RDBK_Search_Replace::instance()->init( $job );
 				$job->set( 'r_phase', 'replace' );
 			}

@@ -96,7 +96,7 @@ class RDBK_Job {
 	 */
 	public function log( string $message ): void {
 		$log   = (array) ( $this->data['log'] ?? array() );
-		$log[] = gmdate( 'H:i:s' ) . ' — ' . $message;
+		$log[] = wp_date( 'H:i:s' ) . ' — ' . $message;
 		if ( count( $log ) > 100 ) {
 			$log = array_slice( $log, -100 );
 		}
