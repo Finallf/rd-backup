@@ -21,6 +21,7 @@ class RDBK_Storage {
 
 	const DIR_NAME        = 'rd-backup';
 	const DOWNLOAD_ACTION = 'rdbk_download';
+	const SAFETY_KEEP     = 2;
 
 	/**
 	 * Singleton instance.
@@ -45,6 +46,21 @@ class RDBK_Storage {
 	 */
 	public static function on_activation(): void {
 		self::instance()->ensure_dir();
+	}
+
+	/**
+	 * Cleans transient state on deactivation: the job file (holds the per-job
+	 * secret + session token) and the temp work dirs. Backups are left untouched.
+	 */
+	public static function on_deactivation(): void {
+		RDBK_Job::purge();
+
+		$base = self::instance()->dir();
+		$fs   = self::instance()->filesystem();
+		if ( $fs ) {
+			$fs->rmdir( $base . '/.work', true );
+			$fs->rmdir( $base . '/.restore', true );
+		}
 	}
 
 	/**
@@ -118,11 +134,13 @@ class RDBK_Storage {
 	}
 
 	/**
-	 * Lists the archives in the store, newest first.
+	 * Lists archives in the store, newest first. $kind filters by the safety tag
+	 * (auto-backups named rd-backup-safe-…): 'user' (default) hides them, 'safety'
+	 * shows only them, 'all' shows both.
 	 *
 	 * @return array<int,array<string,mixed>>
 	 */
-	public function list_archives(): array {
+	public function list_archives( string $kind = 'user' ): array {
 		$dir = $this->dir();
 		if ( ! is_dir( $dir ) ) {
 			return array();
@@ -133,7 +151,11 @@ class RDBK_Storage {
 			if ( ! is_file( $path ) ) {
 				continue;
 			}
-			$name    = basename( $path );
+			$name      = basename( $path );
+			$is_safety = ( 0 === strpos( $name, 'rd-backup-safe-' ) );
+			if ( ( 'user' === $kind && $is_safety ) || ( 'safety' === $kind && ! $is_safety ) ) {
+				continue;
+			}
 			$size    = (int) filesize( $path );
 			$mtime   = (int) filemtime( $path );
 			$items[] = array(
@@ -143,6 +165,7 @@ class RDBK_Storage {
 				'modified' => $mtime,
 				'dateh'    => wp_date( 'Y-m-d H:i', $mtime ),
 				'url'      => $this->download_url( $name ),
+				'safety'   => $is_safety,
 			);
 		}
 
@@ -154,6 +177,16 @@ class RDBK_Storage {
 		);
 
 		return $items;
+	}
+
+	/**
+	 * Keeps only the $keep most recent safety snapshots; deletes the rest.
+	 */
+	public function prune_safety_snapshots( int $keep ): void {
+		$snaps = $this->list_archives( 'safety' );
+		foreach ( array_slice( $snaps, max( 0, $keep ) ) as $old ) {
+			$this->delete( (string) $old['name'] );
+		}
 	}
 
 	/**

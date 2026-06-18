@@ -241,6 +241,11 @@ class RDBK_Restore {
 		wp_cache_flush();
 		delete_option( 'rewrite_rules' );
 
+		// Retention: keep only the most recent safety snapshots. Done here — after
+		// the archive has been fully consumed — so restoring the oldest snapshot
+		// can't prune the very file being restored out from under the run.
+		RDBK_Storage::instance()->prune_safety_snapshots( RDBK_Storage::SAFETY_KEEP );
+
 		$job->log( 'Restore complete.' );
 		$job->set(
 			'stats',

@@ -100,6 +100,8 @@ class RDBK_Admin {
 					'safetyBackup'     => __( 'Creating safety backup…', 'rd-backup' ),
 					'restoring'        => __( 'Restoring…', 'rd-backup' ),
 					'restoreDone'      => __( 'Restore complete. You may need to log in again — reload the page to see the restored site.', 'rd-backup' ),
+					'confirmReset'     => __( 'Clear the current job state? This does not touch your backups.', 'rd-backup' ),
+					'resetDone'        => __( 'Job state cleared.', 'rd-backup' ),
 				),
 			)
 		);
@@ -209,6 +211,14 @@ class RDBK_Admin {
 			<?php esc_html_e( 'Defense in depth for nginx (including nginx-in-front setups like HestiaCP, where the .htaccess can be bypassed). Add this to the site config:', 'rd-backup' ); ?>
 		</p>
 		<pre class="rdbk-snippet"><?php echo esc_html( RDBK_Storage::instance()->nginx_rule() ); ?></pre>
+
+		<hr>
+
+		<p>
+			<button type="button" class="button" id="rdbk-reset-job"><?php esc_html_e( 'Reset job state', 'rd-backup' ); ?></button>
+			<span id="rdbk-reset-msg" class="rdbk-inline-msg" aria-live="polite"></span>
+		</p>
+		<p class="description"><?php esc_html_e( 'Clears a stuck backup or restore job if one was interrupted. Your backups are not touched.', 'rd-backup' ); ?></p>
 		<?php
 	}
 
@@ -263,6 +273,36 @@ class RDBK_Admin {
 				<?php endif; ?>
 			</tbody>
 		</table>
+
+		<?php
+		$snapshots = RDBK_Storage::instance()->list_archives( 'safety' );
+		if ( ! empty( $snapshots ) ) :
+			?>
+			<h2><?php esc_html_e( 'Safety snapshots', 'rd-backup' ); ?></h2>
+			<p class="description">
+				<?php esc_html_e( 'Full backups taken automatically right before each restore (the last 2 are kept). Restore one to undo your last restore.', 'rd-backup' ); ?>
+			</p>
+			<table class="widefat striped rdbk-restore-list">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Snapshot', 'rd-backup' ); ?></th>
+						<th><?php esc_html_e( 'Size', 'rd-backup' ); ?></th>
+						<th><?php esc_html_e( 'Date', 'rd-backup' ); ?></th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php foreach ( $snapshots as $item ) : ?>
+						<tr>
+							<td><code><?php echo esc_html( $item['name'] ); ?></code></td>
+							<td><?php echo esc_html( $item['sizeh'] ); ?></td>
+							<td><?php echo esc_html( $item['dateh'] ); ?></td>
+							<td><button type="button" class="button rdbk-preview-btn" data-file="<?php echo esc_attr( $item['name'] ); ?>"><?php esc_html_e( 'Preview', 'rd-backup' ); ?></button></td>
+						</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+		<?php endif; ?>
 
 		<div id="rdbk-preview" class="rdbk-preview" hidden></div>
 		<?php

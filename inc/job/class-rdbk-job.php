@@ -116,6 +116,16 @@ class RDBK_Job {
 		}
 	}
 
+	/**
+	 * Removes the job file regardless of instance state (deactivation cleanup).
+	 */
+	public static function purge(): void {
+		$file = self::file();
+		if ( file_exists( $file ) ) {
+			wp_delete_file( $file );
+		}
+	}
+
 	public function to_array(): array {
 		return $this->data;
 	}

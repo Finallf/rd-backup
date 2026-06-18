@@ -189,7 +189,6 @@
 
 	// --- Restore preview (PR5) + apply (PR6) ---
 	var previewBox = document.getElementById( 'rdbk-preview' );
-	var restoreList = document.querySelector( '.rdbk-restore-list' );
 	var currentFile = null;
 
 	function fmtBytes( n ) {
@@ -410,21 +409,47 @@
 		} );
 	}
 
-	if ( restoreList ) {
-		restoreList.addEventListener( 'click', function ( e ) {
-			var btn = e.target.closest( '.rdbk-preview-btn' );
-			if ( ! btn ) {
+	// Preview buttons live in both the backups list and the safety-snapshots
+	// list — delegate on the document so either one works.
+	document.addEventListener( 'click', function ( e ) {
+		var btn = e.target.closest( '.rdbk-preview-btn' );
+		if ( ! btn ) {
+			return;
+		}
+		currentFile = btn.getAttribute( 'data-file' );
+		if ( previewBox ) {
+			previewBox.hidden = false;
+			previewBox.innerHTML = '<p>' + esc( i18n.previewing || 'Reading…' ) + '</p>';
+		}
+		post( 'rdbk_preview', { file: currentFile } ).then( function ( r ) {
+			renderPreview( r && r.data );
+		} ).catch( function () {
+			renderPreview( null );
+		} );
+	} );
+
+	// --- Reset job state ---
+	var resetBtn = document.getElementById( 'rdbk-reset-job' );
+	var resetMsg = document.getElementById( 'rdbk-reset-msg' );
+	if ( resetBtn ) {
+		resetBtn.addEventListener( 'click', function () {
+			if ( ! window.confirm( i18n.confirmReset || 'Clear the current job state?' ) ) {
 				return;
 			}
-			currentFile = btn.getAttribute( 'data-file' );
-			if ( previewBox ) {
-				previewBox.hidden = false;
-				previewBox.innerHTML = '<p>' + esc( i18n.previewing || 'Reading…' ) + '</p>';
+			resetBtn.disabled = true;
+			if ( resetMsg ) {
+				resetMsg.textContent = i18n.working || 'Working…';
 			}
-			post( 'rdbk_preview', { file: currentFile } ).then( function ( r ) {
-				renderPreview( r && r.data );
+			post( 'rdbk_cancel' ).then( function () {
+				resetBtn.disabled = false;
+				if ( resetMsg ) {
+					resetMsg.textContent = i18n.resetDone || 'Job state cleared.';
+				}
 			} ).catch( function () {
-				renderPreview( null );
+				resetBtn.disabled = false;
+				if ( resetMsg ) {
+					resetMsg.textContent = i18n.failed || 'Failed.';
+				}
 			} );
 		} );
 	}

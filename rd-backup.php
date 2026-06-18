@@ -44,3 +44,4 @@ require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-plugin.php';
 
 add_action( 'plugins_loaded', array( 'RDBK_Plugin', 'instance' ) );
 register_activation_hook( __FILE__, array( 'RDBK_Storage', 'on_activation' ) );
+register_deactivation_hook( __FILE__, array( 'RDBK_Storage', 'on_deactivation' ) );
