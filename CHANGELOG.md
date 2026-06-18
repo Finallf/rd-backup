@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.0.0-beta.11](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.10...v1.0.0-beta.11) (2026-06-18)
+
+### ✨ Features
+
+* **backup:** safety-snapshot retention + reset control ([eb63fbd](https://github.com/Finallf/rd-backup/commit/eb63fbdb7b20d72a528bf1060c2041ba21b61c40))
+
+<br>
+
+---
+
 ## [1.0.0-beta.10](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.9...v1.0.0-beta.10) (2026-06-18)
 
 ### 🐛 Bug Fixes
