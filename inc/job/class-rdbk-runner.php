@@ -53,6 +53,9 @@ class RDBK_Runner {
 	public function ajax_start(): void {
 		$this->guard();
 		$type = $this->requested_type();
+		if ( '' === $type ) {
+			wp_send_json_error( array( 'message' => __( 'Unknown job type.', 'rd-backup' ) ), 400 );
+		}
 
 		// One job at a time: resume the running one instead of starting another.
 		$existing = RDBK_Job::load();
@@ -83,8 +86,8 @@ class RDBK_Runner {
 	 */
 	private function requested_type(): string {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified in guard() before this runs.
-		$type = isset( $_POST['type'] ) ? sanitize_key( wp_unslash( $_POST['type'] ) ) : 'test';
-		return in_array( $type, array( 'test', 'db_dump', 'backup', 'restore' ), true ) ? $type : 'test';
+		$type = isset( $_POST['type'] ) ? sanitize_key( wp_unslash( $_POST['type'] ) ) : '';
+		return in_array( $type, array( 'db_dump', 'backup', 'restore' ), true ) ? $type : '';
 	}
 
 	/**
@@ -115,8 +118,6 @@ class RDBK_Runner {
 			RDBK_Restore::instance()->step_restore( $job );
 		} elseif ( 'db_dump' === $type ) {
 			$this->db_dump_step( $job );
-		} else {
-			$this->fake_step( $job );
 		}
 
 		wp_send_json_success( $this->payload( $job ) );
@@ -150,24 +151,6 @@ class RDBK_Runner {
 			$job->set( 'progress', 100 );
 			$job->set( 'phase', 'done' );
 			$job->set( 'status', 'done' );
-		}
-
-		$job->save();
-	}
-
-	/**
-	 * Placeholder engine (PR1): advances a counter to exercise the AJAX loop.
-	 */
-	private function fake_step( RDBK_Job $job ): void {
-		$cursor = min( 100, (int) $job->get( 'cursor', 0 ) + 10 );
-		$job->set( 'cursor', $cursor );
-		$job->set( 'progress', $cursor );
-
-		if ( $cursor >= 100 ) {
-			$job->set( 'phase', 'done' );
-			$job->set( 'status', 'done' );
-		} else {
-			$job->set( 'phase', $cursor < 30 ? 'init' : 'working' );
 		}
 
 		$job->save();

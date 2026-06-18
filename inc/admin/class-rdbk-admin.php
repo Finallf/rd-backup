@@ -185,29 +185,6 @@ class RDBK_Admin {
 
 		<hr>
 
-		<h2><?php esc_html_e( 'Engine test (scaffold)', 'rd-backup' ); ?></h2>
-		<p class="description">
-			<?php esc_html_e( 'Runs a fake job (0→100%) to validate the resumable loop.', 'rd-backup' ); ?>
-		</p>
-
-		<div class="rdbk-runner" id="rdbk-runner">
-			<button type="button" class="button button-primary" id="rdbk-test-run">
-				<?php esc_html_e( 'Test engine', 'rd-backup' ); ?>
-			</button>
-			<button type="button" class="button" id="rdbk-test-cancel" hidden>
-				<?php esc_html_e( 'Cancel', 'rd-backup' ); ?>
-			</button>
-
-			<div class="rdbk-progress" hidden>
-				<div class="rdbk-progress__track">
-					<div class="rdbk-progress__bar" id="rdbk-progress-bar" style="width:0%"></div>
-				</div>
-				<p class="rdbk-progress__status" id="rdbk-progress-status" aria-live="polite"></p>
-			</div>
-		</div>
-
-		<hr>
-
 		<h2><?php esc_html_e( 'Backup store', 'rd-backup' ); ?></h2>
 		<p class="description">
 			<?php
