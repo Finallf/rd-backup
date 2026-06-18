@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: RD Backup
+ * Plugin Name: ReloadeD Backup
  * Plugin URI: https://github.com/Finallf/rd-backup
  * Description: Complete, portable WordPress backup & restore — a full database dump plus the uploads folder in a single .zip, restorable on any host. Pairs with the ReloadeD theme but runs standalone with any theme.
  * Version: 1.0.0-beta.9
@@ -25,8 +25,7 @@ define( 'RDBK_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
 /*
  * Module bootstrap. Engine classes live in inc/; the orchestrator wires the
- * admin UI, the resumable job runner and the environment health-check. Backup,
- * restore, storage and the auto-updater land in the following releases.
+ * admin UI, the resumable job runner and the environment health-check.
  */
 require_once RDBK_PLUGIN_DIR . 'inc/job/class-rdbk-job.php';
 require_once RDBK_PLUGIN_DIR . 'inc/job/class-rdbk-runner.php';

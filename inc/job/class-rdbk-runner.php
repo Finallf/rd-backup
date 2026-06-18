@@ -1,11 +1,9 @@
 <?php
 /**
- * Job runner — admin-ajax endpoints that drive the resumable engine one step
- * at a time.
- *
- * In this scaffold the "engine" is a fake counter (0→100%), so the AJAX loop,
- * the progress UI and the resume/cancel flow can be validated end-to-end before
- * the real backup/restore phases land in the next releases.
+ * Job runner — admin-ajax endpoints that drive the resumable engine one step at
+ * a time: start a job, step it to completion, cancel it. The step loop is
+ * authorized by the per-job secret, so it survives a restore swapping the whole
+ * database (which would otherwise log the admin out mid-run).
  *
  * @package RD_Backup
  */
@@ -39,7 +37,6 @@ class RDBK_Runner {
 		// the step loop authorized through that window — see authorize_step().
 		add_action( 'wp_ajax_nopriv_rdbk_step', array( $this, 'ajax_step' ) );
 		add_action( 'wp_ajax_rdbk_cancel', array( $this, 'ajax_cancel' ) );
-		add_action( 'wp_ajax_rdbk_test_storage', array( $this, 'ajax_test_storage' ) );
 		add_action( 'wp_ajax_rdbk_delete_archive', array( $this, 'ajax_delete_archive' ) );
 		add_action( 'wp_ajax_rdbk_preview', array( $this, 'ajax_preview' ) );
 	}
@@ -82,9 +79,7 @@ class RDBK_Runner {
 		// (the browser would have lost the per-job secret anyway), and a leftover
 		// 'running' job from a crashed run would otherwise block every new start.
 		$job = RDBK_Job::start( $type );
-		if ( 'db_dump' === $type ) {
-			$this->db_dump_init( $job );
-		} elseif ( 'backup' === $type ) {
+		if ( 'backup' === $type ) {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified in guard() before this runs.
 			$kind = isset( $_POST['kind'] ) ? sanitize_key( wp_unslash( $_POST['kind'] ) ) : '';
 			RDBK_Backup::instance()->init( $job, $kind );
@@ -105,20 +100,7 @@ class RDBK_Runner {
 	private function requested_type(): string {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified in guard() before this runs.
 		$type = isset( $_POST['type'] ) ? sanitize_key( wp_unslash( $_POST['type'] ) ) : '';
-		return in_array( $type, array( 'db_dump', 'backup', 'restore' ), true ) ? $type : '';
-	}
-
-	/**
-	 * Standalone DB dump: writes the .sql straight into the store for download.
-	 */
-	private function db_dump_init( RDBK_Job $job ): void {
-		$storage = RDBK_Storage::instance();
-		$storage->ensure_dir();
-		$sql_name = 'database-' . bin2hex( random_bytes( 8 ) ) . '.sql';
-		$job->set( 'sql_name', $sql_name );
-		RDBK_DB_Dump::instance()->init( $job, $storage->dir() . '/' . $sql_name );
-		$job->set( 'phase', 'db' );
-		$job->save();
+		return in_array( $type, array( 'backup', 'restore' ), true ) ? $type : '';
 	}
 
 	public function ajax_step(): void {
@@ -133,44 +115,9 @@ class RDBK_Runner {
 			RDBK_Backup::instance()->step( $job );
 		} elseif ( 'restore' === $type ) {
 			RDBK_Restore::instance()->step_restore( $job );
-		} elseif ( 'db_dump' === $type ) {
-			$this->db_dump_step( $job );
 		}
 
 		wp_send_json_success( $this->payload( $job ) );
-	}
-
-	/**
-	 * Advances a standalone DB dump; finalizes the job with download stats.
-	 */
-	private function db_dump_step( RDBK_Job $job ): void {
-		$dump = RDBK_DB_Dump::instance();
-		$done = $dump->step( $job );
-		$job->set( 'progress', $dump->progress( $job ) );
-
-		if ( $done ) {
-			$storage  = RDBK_Storage::instance();
-			$sql_name = (string) $job->get( 'sql_name' );
-			$sql_path = $storage->dir() . '/' . $sql_name;
-			$db_stats = (array) $job->get( 'db_stats', array() );
-			$size     = file_exists( $sql_path ) ? (int) filesize( $sql_path ) : 0;
-
-			$job->set(
-				'stats',
-				array(
-					'tables' => (int) ( $db_stats['tables'] ?? 0 ),
-					'rows'   => (int) ( $db_stats['rows'] ?? 0 ),
-					'sizeh'  => size_format( $size ),
-					'file'   => $sql_name,
-					'url'    => $storage->download_url( $sql_name ),
-				)
-			);
-			$job->set( 'progress', 100 );
-			$job->set( 'phase', 'done' );
-			$job->set( 'status', 'done' );
-		}
-
-		$job->save();
 	}
 
 	public function ajax_cancel(): void {
@@ -181,23 +128,6 @@ class RDBK_Runner {
 			$job->clear();
 		}
 		wp_send_json_success( array( 'status' => 'cancelled' ) );
-	}
-
-	public function ajax_test_storage(): void {
-		$this->guard();
-
-		$storage = RDBK_Storage::instance();
-		$name    = $storage->write_test_file();
-		if ( '' === $name ) {
-			wp_send_json_error( array( 'message' => __( 'Could not write the test archive (is ZipArchive available and the store writable?).', 'rd-backup' ) ), 500 );
-		}
-
-		wp_send_json_success(
-			array(
-				'message' => __( 'Test archive written to the store.', 'rd-backup' ),
-				'items'   => $storage->list_archives(),
-			)
-		);
 	}
 
 	public function ajax_delete_archive(): void {

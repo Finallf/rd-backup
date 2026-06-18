@@ -58,7 +58,7 @@ class RDBK_Restore {
 			$zip->close();
 			return array(
 				'ok'    => false,
-				'error' => __( 'Not an RD Backup archive (no manifest.json).', 'rd-backup' ),
+				'error' => __( 'Not a ReloadeD Backup archive (no manifest.json).', 'rd-backup' ),
 			);
 		}
 
@@ -75,7 +75,7 @@ class RDBK_Restore {
 			$zip->close();
 			return array(
 				'ok'    => false,
-				'error' => __( 'This backup was made by a newer version of RD Backup — update the plugin to restore it.', 'rd-backup' ),
+				'error' => __( 'This backup was made by a newer version of ReloadeD Backup — update the plugin to restore it.', 'rd-backup' ),
 			);
 		}
 

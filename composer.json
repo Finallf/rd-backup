@@ -1,6 +1,6 @@
 {
     "name": "finallf/rd-backup",
-    "description": "Dev tooling for the RD Backup WordPress plugin — PHPCS + WordPress Coding Standards + PHPCompatibility.",
+    "description": "Dev tooling for the ReloadeD Backup WordPress plugin — PHPCS + WordPress Coding Standards + PHPCompatibility.",
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",
     "require": {

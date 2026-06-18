@@ -28,7 +28,7 @@ class RDBK_Manifest {
 
 		$manifest = array(
 			'schema_version' => self::SCHEMA,
-			'generator'      => 'RD Backup ' . RDBK_VERSION,
+			'generator'      => 'ReloadeD Backup ' . RDBK_VERSION,
 			'created_at'     => gmdate( 'c' ),
 			'site'           => array(
 				'home_url'     => home_url(),

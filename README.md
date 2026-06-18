@@ -1,4 +1,4 @@
-# RD Backup
+# ReloadeD Backup
 
 Complete, portable WordPress backup & restore — a **full database dump plus the `wp-content/uploads` folder** packaged into a single `.zip`, restorable on **any** host.
 

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<ruleset name="RD Backup">
+<ruleset name="ReloadeD Backup">
     <description>
-        Coding standards do plugin RD Backup — base WordPress (Core + Extra + Docs) +
+        Coding standards do plugin ReloadeD Backup — base WordPress (Core + Extra + Docs) +
         PHPCompatibilityWP. Rodado localmente via `composer phpcs` e no CI via
         `.github/workflows/smoke-test.yml` (job "PHPCS + WPCS Lint").
     </description>

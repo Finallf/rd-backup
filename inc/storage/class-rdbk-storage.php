@@ -82,7 +82,7 @@ class RDBK_Storage {
 
 		$htaccess = $dir . '/.htaccess';
 		if ( ! file_exists( $htaccess ) ) {
-			$rules = "# RD Backup — deny direct access (Apache).\n"
+			$rules = "# ReloadeD Backup — deny direct access (Apache).\n"
 				. "<IfModule mod_authz_core.c>\n\tRequire all denied\n</IfModule>\n"
 				. "<IfModule !mod_authz_core.c>\n\tOrder allow,deny\n\tDeny from all\n</IfModule>\n";
 			$fs->put_contents( $htaccess, $rules, FS_CHMOD_FILE );
@@ -162,8 +162,7 @@ class RDBK_Storage {
 	 */
 	public function resolve_safe( string $name ): string {
 		$name = basename( $name );
-		$ext  = strtolower( (string) substr( $name, -4 ) );
-		if ( '' === $name || ( '.zip' !== $ext && '.sql' !== $ext ) ) {
+		if ( '' === $name || '.zip' !== strtolower( (string) substr( $name, -4 ) ) ) {
 			return '';
 		}
 		$real = realpath( $this->dir() . '/' . $name );
@@ -206,31 +205,6 @@ class RDBK_Storage {
 	}
 
 	/**
-	 * Writes a small real .zip into the store — used by the storage self-test to
-	 * prove write + list + authenticated download (and ZipArchive) end-to-end.
-	 * Returns the filename, or an empty string on failure.
-	 */
-	public function write_test_file(): string {
-		if ( ! class_exists( 'ZipArchive' ) || ! $this->ensure_dir() ) {
-			return '';
-		}
-		$name = $this->new_archive_name();
-		$path = $this->dir() . '/' . $name;
-
-		$zip = new ZipArchive();
-		if ( true !== $zip->open( $path, ZipArchive::CREATE | ZipArchive::OVERWRITE ) ) {
-			return '';
-		}
-		$zip->addFromString(
-			'readme.txt',
-			"RD Backup storage self-test.\nCreated: " . gmdate( 'c' ) . "\nThis is a placeholder, not a real backup.\n"
-		);
-		$zip->close();
-
-		return file_exists( $path ) ? $name : '';
-	}
-
-	/**
 	 * Status snapshot for the Health tab.
 	 *
 	 * @return array<string,mixed>
@@ -270,10 +244,8 @@ class RDBK_Storage {
 			wp_die( esc_html__( 'Backup file not found.', 'rd-backup' ), 404 );
 		}
 
-		$mime = ( '.sql' === strtolower( (string) substr( $path, -4 ) ) ) ? 'application/sql' : 'application/zip';
-
 		nocache_headers();
-		header( 'Content-Type: ' . $mime );
+		header( 'Content-Type: application/zip' );
 		header( 'Content-Disposition: attachment; filename="' . basename( $path ) . '"' );
 		header( 'Content-Length: ' . filesize( $path ) );
 

@@ -1,10 +1,8 @@
 <?php
 /**
- * Admin page — Tools → RD Backup, with Backup / Restore / Health tabs and the
- * AJAX progress UI.
- *
- * In this scaffold the Backup tab runs the fake engine to exercise the
- * resumable loop; Restore is a placeholder; Health renders the preflight.
+ * Admin page — Tools → ReloadeD Backup, with Backup / Restore / Health tabs and
+ * the AJAX progress UI. Backup builds the .zip, Restore inspects and applies an
+ * archive, Health runs the environment preflight.
  *
  * @package RD_Backup
  */
@@ -40,8 +38,8 @@ class RDBK_Admin {
 
 	public function register_menu(): void {
 		add_management_page(
-			__( 'RD Backup', 'rd-backup' ),
-			__( 'RD Backup', 'rd-backup' ),
+			__( 'ReloadeD Backup', 'rd-backup' ),
+			__( 'ReloadeD Backup', 'rd-backup' ),
 			'manage_options',
 			self::MENU_SLUG,
 			array( $this, 'render_page' )
@@ -84,10 +82,6 @@ class RDBK_Admin {
 					'download'         => __( 'Download', 'rd-backup' ),
 					'del'              => __( 'Delete', 'rd-backup' ),
 					'confirmDel'       => __( 'Delete this file?', 'rd-backup' ),
-					'dbDone'           => __( 'Dump complete:', 'rd-backup' ),
-					'tables'           => __( 'tables', 'rd-backup' ),
-					'rows'             => __( 'rows', 'rd-backup' ),
-					'downloadSql'      => __( 'Download database.sql', 'rd-backup' ),
 					'backupDone'       => __( 'Backup created:', 'rd-backup' ),
 					'previewing'       => __( 'Reading archive…', 'rd-backup' ),
 					'origin'           => __( 'Origin', 'rd-backup' ),
@@ -128,7 +122,7 @@ class RDBK_Admin {
 		}
 
 		echo '<div class="wrap rdbk-wrap">';
-		echo '<h1>' . esc_html__( 'RD Backup', 'rd-backup' ) . '</h1>';
+		echo '<h1>' . esc_html__( 'ReloadeD Backup', 'rd-backup' ) . '</h1>';
 
 		echo '<h2 class="nav-tab-wrapper">';
 		foreach ( $tabs as $slug => $label ) {
@@ -196,11 +190,6 @@ class RDBK_Admin {
 			?>
 		</p>
 
-		<p>
-			<button type="button" class="button" id="rdbk-test-storage"><?php esc_html_e( 'Test storage', 'rd-backup' ); ?></button>
-			<span id="rdbk-storage-msg" class="rdbk-inline-msg" aria-live="polite"></span>
-		</p>
-
 		<table class="widefat striped rdbk-archives">
 			<thead>
 				<tr>
@@ -220,26 +209,6 @@ class RDBK_Admin {
 			<?php esc_html_e( 'Defense in depth for nginx (including nginx-in-front setups like HestiaCP, where the .htaccess can be bypassed). Add this to the site config:', 'rd-backup' ); ?>
 		</p>
 		<pre class="rdbk-snippet"><?php echo esc_html( RDBK_Storage::instance()->nginx_rule() ); ?></pre>
-
-		<hr>
-
-		<h2><?php esc_html_e( 'Database dump', 'rd-backup' ); ?></h2>
-		<p class="description">
-			<?php esc_html_e( 'Runs the resumable database dumper and writes database.sql to the store. Download it to verify the dump. This is the first piece of the real backup.', 'rd-backup' ); ?>
-		</p>
-
-		<p>
-			<button type="button" class="button button-primary" id="rdbk-dbdump-run"><?php esc_html_e( 'Test DB dump', 'rd-backup' ); ?></button>
-		</p>
-
-		<div class="rdbk-progress" id="rdbk-dbdump-progress" hidden>
-			<div class="rdbk-progress__track">
-				<div class="rdbk-progress__bar" id="rdbk-dbdump-bar" style="width:0%"></div>
-			</div>
-			<p class="rdbk-progress__status" id="rdbk-dbdump-status" aria-live="polite"></p>
-		</div>
-
-		<div class="rdbk-db-result" id="rdbk-dbdump-result" hidden></div>
 		<?php
 	}
 

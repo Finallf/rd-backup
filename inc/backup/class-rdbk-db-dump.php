@@ -47,7 +47,7 @@ class RDBK_DB_Dump {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- dumping every table; not a cacheable read.
 		$tables = array_values( (array) $wpdb->get_col( 'SHOW TABLES' ) );
 
-		$header = "-- RD Backup database dump\n"
+		$header = "-- ReloadeD Backup database dump\n"
 			. '-- Generated: ' . gmdate( 'c' ) . "\n"
 			. '-- Charset: ' . DB_CHARSET . "\n\n"
 			. 'SET NAMES ' . DB_CHARSET . ";\n"
