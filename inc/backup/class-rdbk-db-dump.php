@@ -162,11 +162,23 @@ class RDBK_DB_Dump {
 	 * @param array<int,array<string,mixed>> $rows  Rows to render.
 	 */
 	private function rows_to_inserts( string $table, array $rows ): string {
+		global $wpdb;
+
 		$out = '';
 		foreach ( $rows as $row ) {
 			$vals = array();
 			foreach ( $row as $value ) {
-				$vals[] = ( null === $value ) ? 'NULL' : "'" . esc_sql( (string) $value ) . "'";
+				if ( null === $value ) {
+					$vals[] = 'NULL';
+					continue;
+				}
+				// mysqli_real_escape_string, NOT esc_sql(): esc_sql() ends in
+				// $wpdb's add_placeholder_escape(), which rewrites literal "%" into
+				// the placeholder hash. In a dumped string that escape is never
+				// reverted, so it corrupts values like the permalink structure
+				// /%postname%/ → /<hash>postname<hash>/.
+				// phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_real_escape_string -- escaping a dump value verbatim; esc_sql() would inject the placeholder hash (see note).
+				$vals[] = "'" . mysqli_real_escape_string( $wpdb->dbh, (string) $value ) . "'";
 			}
 			$out .= "INSERT INTO `$table` VALUES (" . implode( ', ', $vals ) . ");\n";
 		}
