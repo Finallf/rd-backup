@@ -1,5 +1,5 @@
 <p align="center">
-	<a href="https://github.com/Finallf/rd-backup"><img alt="ReloadeD Backup" src="https://raw.githubusercontent.com/Finallf/rd-backup/master/assets/img/logo-rdbk-panel.webp"></a>
+	<a href="https://github.com/Finallf/rd-backup"><img alt="ReloadeD Backup" src="https://raw.githubusercontent.com/Finallf/rd-backup/master/assets/img/reloaded-logo-200-55.webp"></a>
 </p>
 
 <br>
