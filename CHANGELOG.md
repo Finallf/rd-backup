@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.0.0-beta.15](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.14...v1.0.0-beta.15) (2026-06-19)
+
+### 🐛 Bug Fixes
+
+* **updater:** pick the highest semver release, not [0] ([16e0add](https://github.com/Finallf/rd-backup/commit/16e0addd64e1c3aadac49f7ad983135e537f7fed))
+
+<br>
+
+---
+
 ## [1.0.0-beta.14](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.13...v1.0.0-beta.14) (2026-06-18)
 
 ### ✨ Features
