@@ -135,11 +135,11 @@ class RDBK_Admin {
 
 		echo '<div class="rdbk-panel-header">';
 		echo '<h1 class="rdbk-panel-title">' . esc_html__( 'ReloadeD Backup', 'rd-backup' ) . '</h1>';
-		// Logo slot — renders once the .webp is dropped at assets/img/logo-rdbk-panel.webp.
-		if ( file_exists( RDBK_PLUGIN_DIR . 'assets/img/logo-rdbk-panel.webp' ) ) {
+		// Logo slot — renders once the .webp exists at assets/img/.
+		if ( file_exists( RDBK_PLUGIN_DIR . 'assets/img/reloaded-logo-200-55.webp' ) ) {
 			printf(
 				'<img class="rdbk-panel-logo" src="%s" alt="%s">',
-				esc_url( RDBK_PLUGIN_URL . 'assets/img/logo-rdbk-panel.webp' ),
+				esc_url( RDBK_PLUGIN_URL . 'assets/img/reloaded-logo-200-55.webp' ),
 				esc_attr__( 'ReloadeD Backup', 'rd-backup' )
 			);
 		}
