@@ -140,7 +140,20 @@ class RDBK_Updater {
 
 		$data = json_decode( wp_remote_retrieve_body( $response ), true );
 		if ( 'beta' === $channel ) {
-			$data = ( is_array( $data ) && ! empty( $data[0] ) ) ? $data[0] : null;
+			// GitHub's /releases order is NOT reliably newest-first, so don't trust
+			// [0] — pick the highest semver tag. A stable release outranks the betas
+			// (version_compare: 1.0.0 > 1.0.0-beta.14), so beta installs auto-promote.
+			$newest = null;
+			foreach ( (array) $data as $rel ) {
+				if ( ! is_array( $rel ) || empty( $rel['tag_name'] ) || ! empty( $rel['draft'] ) ) {
+					continue;
+				}
+				if ( null === $newest
+					|| version_compare( ltrim( (string) $rel['tag_name'], 'v' ), ltrim( (string) $newest['tag_name'], 'v' ), '>' ) ) {
+					$newest = $rel;
+				}
+			}
+			$data = $newest;
 		}
 		if ( ! is_array( $data ) || empty( $data['tag_name'] ) ) {
 			return null;
