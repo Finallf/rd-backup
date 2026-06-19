@@ -7,6 +7,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.0.0-beta.16](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.15...v1.0.0-beta.16) (2026-06-19)
+
+### ✨ Features
+
+* **admin:** show the ReloadeD logo in the panel header ([d75413e](https://github.com/Finallf/rd-backup/commit/d75413edd0208e0d5b778068eda58e758a101a72))
+
+### 📝 Documentation
+
+* rewrite the README in the ReloadeD style ([b48ed24](https://github.com/Finallf/rd-backup/commit/b48ed248ebf895a2e5df2606cc21acdc894ba8dc))
+
+<br>
+
+---
+
 ## [1.0.0-beta.15](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.14...v1.0.0-beta.15) (2026-06-19)
 
 ### 🐛 Bug Fixes
