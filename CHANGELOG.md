@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.1.0-beta.3](https://github.com/Finallf/rd-backup/compare/v1.1.0-beta.2...v1.1.0-beta.3) (2026-06-20)
+
+### ✨ Features
+
+* **build:** SCSS sources, CI JS minify, and uninstall cleanup ([a77c89a](https://github.com/Finallf/rd-backup/commit/a77c89a59c6e348207f4cb9f6b6814728ee93b3c))
+
+<br>
+
+---
+
 ## [1.1.0-beta.2](https://github.com/Finallf/rd-backup/compare/v1.1.0-beta.1...v1.1.0-beta.2) (2026-06-20)
 
 ### 🐛 Bug Fixes
