@@ -7,6 +7,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.1.0-beta.4](https://github.com/Finallf/rd-backup/compare/v1.1.0-beta.3...v1.1.0-beta.4) (2026-06-20)
+
+### ✨ Features
+
+* **api:** expose rdbk_get_last_backup() for last-backup integrations ([1938d82](https://github.com/Finallf/rd-backup/commit/1938d824bd84c3dc2cfd18a958983a7f8233ecb3))
+
+### 🐛 Bug Fixes
+
+* **integrity:** never restore — or keep — a corrupt archive ([327325a](https://github.com/Finallf/rd-backup/commit/327325a08e05188d3f0ff3ddc0672492c6bb59aa))
+
+<br>
+
+---
+
 ## [1.1.0-beta.3](https://github.com/Finallf/rd-backup/compare/v1.1.0-beta.2...v1.1.0-beta.3) (2026-06-20)
 
 ### ✨ Features
