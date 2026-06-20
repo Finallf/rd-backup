@@ -58,3 +58,23 @@ add_action(
 		load_plugin_textdomain( 'rd-backup', false, dirname( plugin_basename( RDBK_PLUGIN_FILE ) ) . '/languages' );
 	}
 );
+
+/**
+ * Public API: the most recent user backup, or null when there are none.
+ *
+ * Lets another plugin or theme surface a "last backup" indicator without
+ * reaching into this plugin's internals — guard the call with
+ * function_exists( 'rdbk_get_last_backup' ) so it degrades gracefully when the
+ * plugin is absent. Returns the array shape from RDBK_Storage::list_archives()
+ * for the newest non-safety archive (keys: name, size, sizeh, modified, dateh,
+ * url), or null.
+ *
+ * @return array|null
+ */
+function rdbk_get_last_backup(): ?array {
+	if ( ! class_exists( 'RDBK_Storage' ) ) {
+		return null;
+	}
+	$archives = RDBK_Storage::instance()->list_archives( 'user' );
+	return $archives[0] ?? null;
+}
