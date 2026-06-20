@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.1.0-beta.2](https://github.com/Finallf/rd-backup/compare/v1.1.0-beta.1...v1.1.0-beta.2) (2026-06-20)
+
+### 🐛 Bug Fixes
+
+* **admin:** tidy the updates card layout and the nginx snippet style ([7fd3391](https://github.com/Finallf/rd-backup/commit/7fd339140a237a5657ab3caeabc60c4cdba29e82))
+
+<br>
+
+---
+
 ## [1.1.0-beta.1](https://github.com/Finallf/rd-backup/compare/v1.0.0...v1.1.0-beta.1) (2026-06-20)
 
 ### ✨ Features
