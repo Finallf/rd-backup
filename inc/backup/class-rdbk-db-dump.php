@@ -1,0 +1,202 @@
+<?php
+/**
+ * Database dumper — resumable, table by table, in row batches. Produces a
+ * mysqldump-style .sql entirely through $wpdb (works on any host, with no
+ * dependency on exec()/mysqldump). Regenerable transients are skipped.
+ *
+ * Reusable: init() takes the target .sql path, step() returns true when the
+ * dump is complete, and the caller decides what to do next (finalize a
+ * standalone dump, or move on to the uploads phase of a full backup). Cursor
+ * state lives on the job under db_* keys, so the dump is resumable.
+ *
+ * @package RD_Backup
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Streams the database to a .sql file in row-batched, resumable steps.
+ */
+class RDBK_DB_Dump {
+
+	const BATCH = 1000;
+
+	/**
+	 * Singleton instance.
+	 *
+	 * @var RDBK_DB_Dump|null
+	 */
+	private static $instance = null;
+
+	public static function instance(): self {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+		return self::$instance;
+	}
+
+	private function __construct() {}
+
+	/**
+	 * Initializes a dump on the job: lists tables, opens a fresh .sql with a
+	 * header, and seeds the cursor.
+	 */
+	public function init( RDBK_Job $job, string $sql_path ): void {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- dumping every table; not a cacheable read.
+		$tables = array_values( (array) $wpdb->get_col( 'SHOW TABLES' ) );
+
+		$header = "-- ReloadeD Backup database dump\n"
+			. '-- Generated: ' . gmdate( 'c' ) . "\n"
+			. '-- Charset: ' . DB_CHARSET . "\n\n"
+			. 'SET NAMES ' . DB_CHARSET . ";\n"
+			. "SET FOREIGN_KEY_CHECKS = 0;\n\n";
+		$this->write( $sql_path, $header, true );
+
+		$job->set( 'db_tables', $tables );
+		$job->set( 'db_table_index', 0 );
+		$job->set( 'db_row_offset', 0 );
+		$job->set( 'db_sql_path', $sql_path );
+		$job->set(
+			'db_stats',
+			array(
+				'tables'    => count( $tables ),
+				'rows'      => 0,
+				'per_table' => array_fill_keys( $tables, 0 ),
+			)
+		);
+		$job->save();
+	}
+
+	/**
+	 * Processes one batch. Returns true when every table has been dumped.
+	 */
+	public function step( RDBK_Job $job ): bool {
+		$tables   = (array) $job->get( 'db_tables', array() );
+		$ti       = (int) $job->get( 'db_table_index', 0 );
+		$offset   = (int) $job->get( 'db_row_offset', 0 );
+		$sql_path = (string) $job->get( 'db_sql_path' );
+
+		if ( $ti >= count( $tables ) ) {
+			return true;
+		}
+
+		$table = (string) $tables[ $ti ];
+
+		if ( 0 === $offset ) {
+			$this->write( $sql_path, $this->table_structure( $table ) );
+		}
+
+		$rows  = $this->fetch_rows( $table, $offset, self::BATCH );
+		$count = count( $rows );
+
+		if ( $count > 0 ) {
+			$this->write( $sql_path, $this->rows_to_inserts( $table, $rows ) );
+
+			$stats                        = (array) $job->get( 'db_stats' );
+			$stats['rows']                = (int) ( $stats['rows'] ?? 0 ) + $count;
+			$stats['per_table'][ $table ] = (int) ( $stats['per_table'][ $table ] ?? 0 ) + $count;
+			$job->set( 'db_stats', $stats );
+		}
+
+		if ( $count < self::BATCH ) {
+			$job->set( 'db_table_index', $ti + 1 );
+			$job->set( 'db_row_offset', 0 );
+		} else {
+			$job->set( 'db_row_offset', $offset + $count );
+		}
+
+		$complete = (int) $job->get( 'db_table_index', 0 ) >= count( $tables );
+		if ( $complete ) {
+			$this->write( $sql_path, "SET FOREIGN_KEY_CHECKS = 1;\n" );
+		}
+
+		$job->save();
+		return $complete;
+	}
+
+	/**
+	 * Progress (0–100) of the db phase, by table index.
+	 */
+	public function progress( RDBK_Job $job ): int {
+		$total = max( 1, count( (array) $job->get( 'db_tables', array() ) ) );
+		$done  = (int) $job->get( 'db_table_index', 0 );
+		return (int) floor( $done / $total * 100 );
+	}
+
+	/**
+	 * Writes the DROP + CREATE statements for a table.
+	 */
+	private function table_structure( string $table ): string {
+		global $wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- read-only SHOW CREATE (the CREATE keyword trips SchemaChange); table name comes from SHOW TABLES.
+		$create = $wpdb->get_row( "SHOW CREATE TABLE `$table`", ARRAY_N );
+		$ddl    = ( is_array( $create ) && isset( $create[1] ) ) ? $create[1] : '';
+
+		return "--\n-- Table: $table\n--\nDROP TABLE IF EXISTS `$table`;\n" . $ddl . ";\n\n";
+	}
+
+	/**
+	 * Fetches a batch of rows, skipping transients on the options table.
+	 *
+	 * @return array<int,array<string,mixed>>
+	 */
+	private function fetch_rows( string $table, int $offset, int $limit ): array {
+		global $wpdb;
+
+		$where = '';
+		if ( $table === $wpdb->options ) {
+			$where = " WHERE option_name NOT LIKE '\\_transient\\_%' AND option_name NOT LIKE '\\_site\\_transient\\_%'";
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- dumping raw table rows; identifiers/limits are internal integers, not user input.
+		return (array) $wpdb->get_results( "SELECT * FROM `$table`$where LIMIT $limit OFFSET $offset", ARRAY_A );
+	}
+
+	/**
+	 * Renders a batch of rows as INSERT statements.
+	 *
+	 * @param string                         $table Table name.
+	 * @param array<int,array<string,mixed>> $rows  Rows to render.
+	 */
+	private function rows_to_inserts( string $table, array $rows ): string {
+		global $wpdb;
+
+		$out = '';
+		foreach ( $rows as $row ) {
+			$vals = array();
+			foreach ( $row as $value ) {
+				if ( null === $value ) {
+					$vals[] = 'NULL';
+					continue;
+				}
+				// mysqli_real_escape_string, NOT esc_sql(): esc_sql() ends in
+				// $wpdb's add_placeholder_escape(), which rewrites literal "%" into
+				// the placeholder hash. In a dumped string that escape is never
+				// reverted, so it corrupts values like the permalink structure
+				// /%postname%/ → /<hash>postname<hash>/.
+				// phpcs:ignore WordPress.DB.RestrictedFunctions.mysql_mysqli_real_escape_string -- escaping a dump value verbatim; esc_sql() would inject the placeholder hash (see note).
+				$vals[] = "'" . mysqli_real_escape_string( $wpdb->dbh, (string) $value ) . "'";
+			}
+			$out .= "INSERT INTO `$table` VALUES (" . implode( ', ', $vals ) . ");\n";
+		}
+		return $out . "\n";
+	}
+
+	/**
+	 * Appends (or, when $fresh, creates) a chunk to the .sql file via streaming.
+	 */
+	private function write( string $path, string $text, bool $fresh = false ): void {
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen -- streaming append of dump chunks; WP_Filesystem buffers whole files in memory and is unsuitable for an incremental dump.
+		$fh = fopen( $path, $fresh ? 'w' : 'a' );
+		if ( ! $fh ) {
+			return;
+		}
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite -- see fopen note above.
+		fwrite( $fh, $text );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- see fopen note above.
+		fclose( $fh );
+	}
+}

@@ -5,6 +5,13 @@ on:
     branches:
       - master
       - beta
+    # The release commit (chore(release): …) touches ONLY these two files
+    # (the @semantic-release/git assets). Ignoring them means it never even
+    # triggers this workflow — so there is no skipped (grey) run. Smoke Test has
+    # no paths-ignore, so it still runs on the release SHA and gives it a check.
+    paths-ignore:
+      - 'CHANGELOG.md'
+      - 'rd-backup.php'
 
 # Resolves Node.js version 24 warnings for the entire workflow.
 env:

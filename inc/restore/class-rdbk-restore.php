@@ -1,0 +1,347 @@
+<?php
+/**
+ * Restore — read-only side (PR5): opens a backup archive, validates its
+ * manifest and integrity, and builds a human preview with compatibility
+ * warnings. Nothing here writes to the site; applying the restore (DB import,
+ * search-replace, uploads) is the destructive PR6.
+ *
+ * @package RD_Backup
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Inspects a backup archive and reports what a restore would do.
+ */
+class RDBK_Restore {
+
+	/**
+	 * Singleton instance.
+	 *
+	 * @var RDBK_Restore|null
+	 */
+	private static $instance = null;
+
+	public static function instance(): self {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+		return self::$instance;
+	}
+
+	private function __construct() {}
+
+	/**
+	 * Opens an archive from the store and returns a validation + preview payload.
+	 *
+	 * @return array<string,mixed>
+	 */
+	public function inspect( string $name ): array {
+		$path = RDBK_Storage::instance()->resolve_safe( $name );
+		if ( '' === $path ) {
+			return array(
+				'ok'    => false,
+				'error' => __( 'Backup file not found.', 'rd-backup' ),
+			);
+		}
+
+		$zip = new ZipArchive();
+		if ( true !== $zip->open( $path ) ) {
+			return array(
+				'ok'    => false,
+				'error' => __( 'Could not open the archive.', 'rd-backup' ),
+			);
+		}
+
+		$json = $zip->getFromName( 'manifest.json' );
+		if ( false === $json ) {
+			$zip->close();
+			return array(
+				'ok'    => false,
+				'error' => __( 'Not a ReloadeD Backup archive (no manifest.json).', 'rd-backup' ),
+			);
+		}
+
+		$manifest = json_decode( $json, true );
+		if ( ! is_array( $manifest ) || empty( $manifest['schema_version'] ) ) {
+			$zip->close();
+			return array(
+				'ok'    => false,
+				'error' => __( 'The manifest is missing or invalid.', 'rd-backup' ),
+			);
+		}
+
+		if ( (int) $manifest['schema_version'] > RDBK_Manifest::SCHEMA ) {
+			$zip->close();
+			return array(
+				'ok'    => false,
+				'error' => __( 'This backup was made by a newer version of ReloadeD Backup — update the plugin to restore it.', 'rd-backup' ),
+			);
+		}
+
+		$has_sql   = false !== $zip->locateName( 'database.sql' );
+		$expected  = (string) ( $manifest['database']['sql_sha256'] ?? '' );
+		$integrity = $has_sql ? $this->verify_sql_hash( $zip, $expected ) : false;
+		$zip->close();
+
+		return array(
+			'ok'        => true,
+			'file'      => basename( $path ),
+			'manifest'  => $manifest,
+			'has_sql'   => $has_sql,
+			'integrity' => $integrity,
+			'warnings'  => $this->warnings( $manifest ),
+		);
+	}
+
+	/**
+	 * Sets up a restore job for an archive in the store (DB import phase).
+	 */
+	public function init_restore( RDBK_Job $job, string $name ): bool {
+		$path = RDBK_Storage::instance()->resolve_safe( $name );
+		if ( '' === $path ) {
+			return false;
+		}
+		if ( ! RDBK_DB_Import::instance()->init( $job, $path ) ) {
+			return false;
+		}
+		$job->set( 'r_phase', 'import' );
+		$job->set( 'r_file', basename( $path ) );
+		$job->set( 'r_zip', $path );
+		$job->set( 'r_origin', $this->read_origin( $path ) );
+		// Capture NOW, before the import overwrites wp_options (home_url) and
+		// wp_usermeta (the current session token).
+		$uid = get_current_user_id();
+		$job->set( 'r_dest', home_url() );
+		$job->set( 'r_user', $uid );
+		$job->set( 'r_tokens', get_user_meta( $uid, 'session_tokens', true ) );
+		$job->set( 'progress', 0 );
+		$job->log( 'Restore started: ' . basename( $path ) . ' — DB import…' );
+		$job->save();
+		return true;
+	}
+
+	/**
+	 * Keeps the admin logged in across the wp_usermeta import. The import
+	 * overwrites the current user's session_tokens (via mysqli, bypassing WP's
+	 * object cache), which invalidates the auth cookie and 403s the remaining
+	 * AJAX steps. wp_set_auth_cookie() is no help here — admin-ajax has already
+	 * sent its headers, so a fresh Set-Cookie never reaches the browser. Instead
+	 * we re-write the ORIGINAL session_tokens straight into usermeta each import
+	 * step, so the cookie the browser already holds stays valid.
+	 */
+	private function keep_session( RDBK_Job $job ): void {
+		global $wpdb;
+
+		$uid    = (int) $job->get( 'r_user', 0 );
+		$tokens = $job->get( 'r_tokens' );
+		if ( $uid <= 0 || empty( $tokens ) ) {
+			return;
+		}
+
+		$value = maybe_serialize( $tokens );
+		// phpcs:disable WordPress.DB.SlowDBQuery -- 'session_tokens' is one fixed key for one user, not a meta scan.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the import bypassed WP's cache, so update_user_meta would see the stale value and no-op; write straight to usermeta.
+		$id = $wpdb->get_var( $wpdb->prepare( "SELECT umeta_id FROM {$wpdb->usermeta} WHERE user_id = %d AND meta_key = 'session_tokens' LIMIT 1", $uid ) );
+		if ( null !== $id ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- see above.
+			$wpdb->update( $wpdb->usermeta, array( 'meta_value' => $value ), array( 'umeta_id' => (int) $id ) );
+		} else {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- see above.
+			$wpdb->insert(
+				$wpdb->usermeta,
+				array(
+					'user_id'    => $uid,
+					'meta_key'   => 'session_tokens',
+					'meta_value' => $value,
+				)
+			);
+		}
+		// phpcs:enable WordPress.DB.SlowDBQuery
+		clean_user_cache( $uid );
+	}
+
+	/**
+	 * Reads the origin home_url from the archive's manifest (for search-replace).
+	 */
+	private function read_origin( string $zip_path ): string {
+		$zip = new ZipArchive();
+		if ( true !== $zip->open( $zip_path ) ) {
+			return '';
+		}
+		$json = $zip->getFromName( 'manifest.json' );
+		$zip->close();
+		if ( false === $json ) {
+			return '';
+		}
+		$manifest = json_decode( $json, true );
+		return ( is_array( $manifest ) && isset( $manifest['site']['home_url'] ) )
+			? (string) $manifest['site']['home_url']
+			: '';
+	}
+
+	/**
+	 * Advances the restore job: DB import, then finalize.
+	 */
+	public function step_restore( RDBK_Job $job ): void {
+		$phase = (string) $job->get( 'r_phase' );
+
+		if ( 'import' === $phase ) {
+			$done = RDBK_DB_Import::instance()->step( $job );
+			$this->keep_session( $job );
+			$job->set( 'progress', (int) round( RDBK_DB_Import::instance()->progress( $job ) * 0.5 ) );
+			if ( $done ) {
+				$failed = (int) $job->get( 'imp_failed', 0 );
+				$job->log(
+					'DB import done (' . (int) $job->get( 'imp_statements', 0 ) . ' statements'
+					. ( $failed > 0 ? ', ' . $failed . ' failed' : '' ) . ').'
+				);
+				foreach ( (array) $job->get( 'imp_failed_samples', array() ) as $sample ) {
+					$job->log( '  ✗ ' . $sample );
+				}
+				RDBK_Search_Replace::instance()->init( $job );
+				$job->set( 'r_phase', 'replace' );
+			}
+			$job->save();
+			return;
+		}
+
+		if ( 'replace' === $phase ) {
+			$done = RDBK_Search_Replace::instance()->step( $job );
+			$job->set( 'progress', 50 + (int) round( RDBK_Search_Replace::instance()->progress( $job ) * 0.2 ) );
+			if ( $done ) {
+				$job->log( 'Search-replace done (' . (int) $job->get( 'sr_changed', 0 ) . ' rows changed).' );
+				RDBK_Uploads_Extract::instance()->init( $job, (string) $job->get( 'r_zip' ) );
+				$job->log( 'Extracting uploads (' . (int) $job->get( 'up_total', 0 ) . ' files)…' );
+				$job->set( 'r_phase', 'uploads' );
+			}
+			$job->save();
+			return;
+		}
+
+		if ( 'uploads' === $phase ) {
+			$done = RDBK_Uploads_Extract::instance()->step( $job );
+			$job->set( 'progress', 70 + (int) round( RDBK_Uploads_Extract::instance()->progress( $job ) * 0.29 ) );
+			if ( $done ) {
+				$job->set( 'r_phase', 'finalize' );
+			}
+			$job->save();
+			return;
+		}
+
+		$this->finalize_restore( $job );
+	}
+
+	/**
+	 * Post-import cleanup: drop the work files, flush caches and rewrite rules.
+	 */
+	private function finalize_restore( RDBK_Job $job ): void {
+		RDBK_DB_Import::instance()->cleanup( $job );
+
+		wp_cache_flush();
+		delete_option( 'rewrite_rules' );
+
+		// Retention: keep only the most recent safety snapshots. Done here — after
+		// the archive has been fully consumed — so restoring the oldest snapshot
+		// can't prune the very file being restored out from under the run.
+		RDBK_Storage::instance()->prune_safety_snapshots( RDBK_Storage::SAFETY_KEEP );
+
+		$job->log( 'Restore complete.' );
+		$job->set(
+			'stats',
+			array(
+				'file'       => (string) $job->get( 'r_file' ),
+				'statements' => (int) $job->get( 'imp_statements', 0 ),
+				'files'      => (int) $job->get( 'up_total', 0 ),
+				'replaced'   => (int) $job->get( 'sr_changed', 0 ),
+			)
+		);
+		$job->set( 'progress', 100 );
+		$job->set( 'r_phase', 'done' );
+		$job->set( 'status', 'done' );
+		$job->save();
+	}
+
+	/**
+	 * Streams the .sql entry and compares its sha256 with the manifest's.
+	 * Returns true/false, or null when the manifest carries no hash.
+	 */
+	private function verify_sql_hash( ZipArchive $zip, string $expected ): ?bool {
+		if ( '' === $expected ) {
+			return null;
+		}
+		$stream = $zip->getStream( 'database.sql' );
+		if ( ! $stream ) {
+			return false;
+		}
+
+		$ctx = hash_init( 'sha256' );
+		// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fread, WordPress.WP.AlternativeFunctions.file_system_operations_feof, WordPress.WP.AlternativeFunctions.file_system_operations_fclose -- streaming a zip entry to hash it; WP_Filesystem can't read inside an archive.
+		while ( ! feof( $stream ) ) {
+			$buffer = fread( $stream, 1048576 );
+			if ( false === $buffer ) {
+				break;
+			}
+			hash_update( $ctx, $buffer );
+		}
+		fclose( $stream );
+		// phpcs:enable WordPress.WP.AlternativeFunctions.file_system_operations_fread, WordPress.WP.AlternativeFunctions.file_system_operations_feof, WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+
+		return hash_equals( $expected, hash_final( $ctx ) );
+	}
+
+	/**
+	 * Builds compatibility warnings by comparing the manifest with this site.
+	 *
+	 * @param array<string,mixed> $manifest Decoded manifest.
+	 * @return array<int,string>
+	 */
+	private function warnings( array $manifest ): array {
+		$out  = array();
+		$site = isset( $manifest['site'] ) ? (array) $manifest['site'] : array();
+		$env  = isset( $manifest['environment'] ) ? (array) $manifest['environment'] : array();
+
+		$origin = (string) ( $site['home_url'] ?? '' );
+		if ( '' !== $origin && $origin !== home_url() ) {
+			$out[] = sprintf(
+				/* translators: 1: origin domain, 2: this site's domain */
+				__( 'Origin domain (%1$s) differs from this site (%2$s) — a search-replace will run on restore.', 'rd-backup' ),
+				$origin,
+				home_url()
+			);
+		}
+
+		if ( (bool) ( $site['is_multisite'] ?? false ) !== is_multisite() ) {
+			$out[] = __( 'The multisite flag differs between the backup and this site.', 'rd-backup' );
+		}
+
+		$origin_php = (string) ( $env['php_version'] ?? '' );
+		if ( '' !== $origin_php && version_compare( $origin_php, PHP_VERSION, '>' ) ) {
+			$out[] = sprintf(
+				/* translators: 1: origin PHP version, 2: this site's PHP version */
+				__( 'Backup was made on PHP %1$s; this site runs %2$s (older) — watch for incompatibilities.', 'rd-backup' ),
+				$origin_php,
+				PHP_VERSION
+			);
+		}
+
+		$origin_wp = (string) ( $env['wp_version'] ?? '' );
+		if ( '' !== $origin_wp ) {
+			global $wp_version;
+			if ( version_compare( $origin_wp, (string) $wp_version, '>' ) ) {
+				$out[] = sprintf(
+					/* translators: 1: origin WP version, 2: this site's WP version */
+					__( 'Backup was made on WordPress %1$s; this site runs %2$s (older).', 'rd-backup' ),
+					$origin_wp,
+					(string) $wp_version
+				);
+			}
+		}
+
+		if ( file_exists( WP_CONTENT_DIR . '/object-cache.php' ) ) {
+			$out[] = __( 'A persistent object-cache drop-in (e.g. Redis) is active here — if the restored target has no Redis, it may need to be removed.', 'rd-backup' );
+		}
+
+		return $out;
+	}
+}
