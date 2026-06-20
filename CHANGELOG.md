@@ -7,6 +7,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.1.0-beta.1](https://github.com/Finallf/rd-backup/compare/v1.0.0...v1.1.0-beta.1) (2026-06-20)
+
+### ✨ Features
+
+* **i18n:** add translation support and ship the pt_BR locale ([74a3029](https://github.com/Finallf/rd-backup/commit/74a3029776cb73037eb364d96f4444fa7ea7c807))
+
+### 📝 Documentation
+
+* add the en-US documentation ([53bd767](https://github.com/Finallf/rd-backup/commit/53bd76723c5c645b418e94c7a53f90537546982f))
+* add the en-US documentation and exclude docs/ from the built plugin zip ([613d951](https://github.com/Finallf/rd-backup/commit/613d9511b91e68f9d293136819d20cac310a0f07))
+
+<br>
+
+---
+
 ## 1.0.0 (2026-06-20)
 
 ### ✨ Features
