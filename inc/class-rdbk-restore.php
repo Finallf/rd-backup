@@ -95,6 +95,32 @@ class RDBK_Restore {
 	}
 
 	/**
+	 * Re-opens a finished archive and confirms its database.sql still hashes to
+	 * the value recorded in the manifest — i.e. the .zip on disk is restorable.
+	 * Used by the backup finalizer to self-verify a fresh archive. An empty hash
+	 * (no sql / empty database) has nothing to verify and passes.
+	 *
+	 * @param string $path Absolute path to the .zip.
+	 * @return bool True when the archive is intact (or has nothing to verify).
+	 */
+	public function verify_archive( string $path ): bool {
+		$zip = new ZipArchive();
+		if ( true !== $zip->open( $path ) ) {
+			return false;
+		}
+		$json     = $zip->getFromName( 'manifest.json' );
+		$manifest = ( false !== $json ) ? json_decode( $json, true ) : null;
+		$expected = is_array( $manifest ) ? (string) ( $manifest['database']['sql_sha256'] ?? '' ) : '';
+		if ( '' === $expected ) {
+			$zip->close();
+			return true;
+		}
+		$ok = ( true === $this->verify_sql_hash( $zip, $expected ) );
+		$zip->close();
+		return $ok;
+	}
+
+	/**
 	 * Sets up a restore job for an archive in the store (DB import phase).
 	 */
 	public function init_restore( RDBK_Job $job, string $name ): bool {

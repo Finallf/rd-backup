@@ -92,6 +92,8 @@ class RDBK_Admin {
 					'intOk'            => __( 'verified', 'rd-backup' ),
 					'intFail'          => __( 'FAILED — archive may be corrupt', 'rd-backup' ),
 					'intUnknown'       => __( 'no hash in manifest', 'rd-backup' ),
+					'intBlockedTitle'  => __( 'Restore blocked', 'rd-backup' ),
+					'intBlocked'       => __( 'This archive failed its integrity check (corrupt or tampered database) and cannot be restored.', 'rd-backup' ),
 					'warningsLbl'      => __( 'Warnings', 'rd-backup' ),
 					'noWarnings'       => __( 'No compatibility warnings.', 'rd-backup' ),
 					'restoreWarnTitle' => __( 'Heads up:', 'rd-backup' ),
