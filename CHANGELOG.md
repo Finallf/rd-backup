@@ -7,6 +7,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.1.0](https://github.com/Finallf/rd-backup/compare/v1.0.0...v1.1.0) (2026-06-20)
+
+### ✨ Features
+
+* **api:** expose rdbk_get_last_backup() for last-backup integrations ([1938d82](https://github.com/Finallf/rd-backup/commit/1938d824bd84c3dc2cfd18a958983a7f8233ecb3))
+* **build:** SCSS sources, CI JS minify, and uninstall cleanup ([a77c89a](https://github.com/Finallf/rd-backup/commit/a77c89a59c6e348207f4cb9f6b6814728ee93b3c))
+* **i18n:** add translation support and ship the pt_BR locale ([74a3029](https://github.com/Finallf/rd-backup/commit/74a3029776cb73037eb364d96f4444fa7ea7c807))
+
+### 🐛 Bug Fixes
+
+* **admin:** tidy the updates card layout and the nginx snippet style ([7fd3391](https://github.com/Finallf/rd-backup/commit/7fd339140a237a5657ab3caeabc60c4cdba29e82))
+* **integrity:** never restore — or keep — a corrupt archive ([327325a](https://github.com/Finallf/rd-backup/commit/327325a08e05188d3f0ff3ddc0672492c6bb59aa))
+
+### 📝 Documentation
+
+* add the en-US documentation ([53bd767](https://github.com/Finallf/rd-backup/commit/53bd76723c5c645b418e94c7a53f90537546982f))
+* add the en-US documentation and exclude docs/ from the built plugin zip ([613d951](https://github.com/Finallf/rd-backup/commit/613d9511b91e68f9d293136819d20cac310a0f07))
+
+<br>
+
+---
+
 ## [1.1.0-beta.4](https://github.com/Finallf/rd-backup/compare/v1.1.0-beta.3...v1.1.0-beta.4) (2026-06-20)
 
 ### ✨ Features
