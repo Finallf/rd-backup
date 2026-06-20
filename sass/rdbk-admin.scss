@@ -1,0 +1,568 @@
+// ReloadeD Backup — admin UI. 1:1 with the ReloadeD theme panel (native wp-admin palette).
+//
+// Source for assets/css/rdbk-admin.css — compile with `npm run sass:build`
+// (sass --style=compressed). The committed .css is the minified build; this
+// .scss is the readable source. The sass/ folder is excluded from the shipped zip.
+
+// ── Palette (native wp-admin) ────────────────────────────────────────────────
+$rdbk-white:          #fff;
+
+$rdbk-text:           #1d2327; // headings / strong text
+$rdbk-text-secondary: #50575e; // labels, secondary copy
+$rdbk-text-muted:     #757575; // hints, empty states
+
+$rdbk-blue:           #2271b1; // wp primary / accents
+$rdbk-green:          #007a39; // success / "on"
+$rdbk-red:            #d63638; // danger
+$rdbk-amber:          #d29922; // warning accent
+$rdbk-amber-text:     #79670a; // warning text
+
+$rdbk-border-panel:   #ccd0d4; // panel header/form border
+$rdbk-border:         #c3c4c7; // default border
+$rdbk-border-light:   #dcdcde; // section divider
+$rdbk-border-faint:   #f0f0f1; // faint divider / inline-code bg
+$rdbk-bg-strip:       #f6f7f7; // gray strips / placeholder bg
+
+// ── Panel header (title + logo) ──────────────────────────────────────────────
+.rdbk-panel-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20px;
+	padding-bottom: 15px;
+	border-bottom: 1px solid $rdbk-border-panel;
+}
+
+.rdbk-panel-title {
+	margin: 0;
+	padding: 0;
+}
+
+.rdbk-panel-logo {
+	max-height: 50px;
+	width: auto;
+}
+
+// ── Panel form (white wrapper attached to the tabs) ──────────────────────────
+.rdbk-panel-form {
+	margin-top: 0;
+	padding: 20px;
+	background: $rdbk-white;
+	border: 1px solid $rdbk-border-panel;
+	border-top: none;
+}
+
+// ── Dashboard / grid wrappers (card spacing comes from here, not card margins) ─
+.rdbk-pdash {
+	margin-top: 12px;
+
+	> .rdbk-pgrid + .rdbk-pgrid {
+		margin-top: 20px;
+	}
+}
+
+.rdbk-pgrid {
+	display: grid;
+	gap: 20px;
+	grid-template-columns: 1fr;
+}
+
+// ── Section header (dashicon + title) ────────────────────────────────────────
+.rdbk-section-header {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin: 24px 0 16px;
+	padding-bottom: 12px;
+	border-bottom: 1px solid $rdbk-border-light;
+	flex-wrap: wrap;
+
+	.dashicons {
+		width: 24px;
+		height: 24px;
+		color: $rdbk-blue;
+		font-size: 24px;
+		flex-shrink: 0;
+	}
+
+	h2 {
+		margin: 0;
+		padding: 0;
+		color: $rdbk-text;
+		font-size: 1.1rem;
+		font-weight: 600;
+		line-height: 1.4;
+	}
+}
+
+// ── Card ─────────────────────────────────────────────────────────────────────
+.rdbk-card {
+	position: relative;
+	min-width: 0;
+	padding: 20px 24px;
+	background: $rdbk-white;
+	border: 1px solid $rdbk-border;
+	border-radius: 4px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+
+	&__title {
+		margin: 0 0 8px;
+		color: $rdbk-text;
+		font-size: 1rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
+
+	&__desc {
+		margin: 0 0 16px;
+		color: $rdbk-text-secondary;
+		line-height: 1.5;
+	}
+
+	&__hint {
+		margin: 16px 0 0;
+		padding-top: 12px;
+		border-top: 1px solid $rdbk-border-faint;
+		color: $rdbk-text-muted;
+		font-size: 0.85rem;
+		font-style: italic;
+	}
+
+	&--placeholder {
+		background: $rdbk-bg-strip;
+		border-style: dashed;
+	}
+
+	&--warning {
+		background: #fdf6e3;
+		border-left: 4px solid $rdbk-amber;
+
+		.rdbk-card__title {
+			color: $rdbk-amber-text;
+		}
+	}
+
+	&--danger {
+		background: #fdf0f0;
+		border-left: 4px solid $rdbk-red;
+
+		.rdbk-card__title {
+			color: #8a1f20;
+		}
+	}
+}
+
+// ── Badge (inline status chip) ───────────────────────────────────────────────
+.rdbk-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 3px;
+	font-size: 0.72rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.6px;
+	line-height: 1.5;
+	vertical-align: middle;
+
+	&--info {
+		background: rgba($rdbk-blue, 0.12);
+		color: $rdbk-blue;
+	}
+
+	&--success,
+	&--ok {
+		background: rgba($rdbk-green, 0.12);
+		color: $rdbk-green;
+	}
+
+	&--warning,
+	&--warn {
+		background: rgba($rdbk-amber, 0.18);
+		color: $rdbk-amber-text;
+	}
+
+	&--danger,
+	&--fail {
+		background: rgba($rdbk-red, 0.12);
+		color: $rdbk-red;
+	}
+
+	&--neutral {
+		background: rgba(0, 0, 0, 0.07);
+		color: $rdbk-text-secondary;
+	}
+}
+
+// ── Status banner ────────────────────────────────────────────────────────────
+.rdbk-status {
+	margin: 12px 0;
+	padding: 10px 14px;
+	border-radius: 4px;
+	font-size: 0.92rem;
+	line-height: 1.5;
+
+	&--info {
+		background: rgba($rdbk-blue, 0.08);
+		border-left: 4px solid $rdbk-blue;
+		color: $rdbk-text;
+	}
+
+	&--success {
+		background: rgba($rdbk-green, 0.1);
+		border-left: 4px solid $rdbk-green;
+		color: $rdbk-text;
+	}
+
+	&--warning {
+		background: rgba($rdbk-amber, 0.12);
+		border-left: 4px solid $rdbk-amber;
+		color: $rdbk-text;
+	}
+
+	&--danger {
+		background: rgba($rdbk-red, 0.1);
+		border-left: 4px solid $rdbk-red;
+		color: $rdbk-text;
+	}
+}
+
+// ── Empty state ──────────────────────────────────────────────────────────────
+.rdbk-empty {
+	margin: 0;
+	padding: 20px 0;
+	color: $rdbk-text-muted;
+	font-style: italic;
+	text-align: center;
+}
+
+// ── Inline message (next to a button) ────────────────────────────────────────
+.rdbk-inline-msg {
+	margin-left: 10px;
+	color: $rdbk-text-secondary;
+}
+
+// ── Progress bar ─────────────────────────────────────────────────────────────
+.rdbk-progress {
+	margin-top: 16px;
+
+	&__track {
+		width: 100%;
+		height: 18px;
+		background: #e2e4e7;
+		border-radius: 4px;
+		overflow: hidden;
+	}
+
+	&__bar {
+		width: 0;
+		height: 100%;
+		background: $rdbk-blue;
+		transition: width 0.25s ease;
+	}
+
+	&__status {
+		margin: 8px 0 0;
+		color: $rdbk-text-secondary;
+	}
+}
+
+// ── Tables ───────────────────────────────────────────────────────────────────
+.rdbk-archives,
+.rdbk-restore-list,
+.rdbk-health {
+	margin-top: 4px;
+}
+
+// Let long filenames / paths wrap instead of overflowing the table on mobile.
+.rdbk-archives td,
+.rdbk-restore-list td,
+.rdbk-health td {
+	overflow-wrap: anywhere;
+}
+
+// Fixed column widths only on wider screens — on mobile the columns auto-size.
+@media (min-width: 783px) {
+	.rdbk-health th:nth-child(1) {
+		width: 15%;
+	}
+
+	.rdbk-health th:nth-child(2) {
+		width: 15%;
+	}
+}
+
+// ── nginx rule (hint text left, snippet right) ───────────────────────────────
+.rdbk-nginx-rule {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 16px;
+	margin-top: 16px;
+	padding-top: 12px;
+	border-top: 1px solid $rdbk-border-faint;
+
+	.rdbk-card__hint {
+		flex: 1;
+		margin: 0;
+		padding: 0;
+		border-top: none;
+	}
+
+	.rdbk-snippet {
+		flex-shrink: 0;
+	}
+}
+
+// nginx snippet (mirrors the theme's .rd-robots-defaults strip)
+.rdbk-snippet {
+	margin: 6px 0;
+	padding: 8px 12px;
+	background: $rdbk-bg-strip;
+	border-left: 3px solid $rdbk-border;
+	font-size: 12px;
+	line-height: 1.5;
+	white-space: pre-wrap;
+	overflow-x: auto;
+}
+
+// ── Restore preview ──────────────────────────────────────────────────────────
+.rdbk-preview {
+	margin-top: 16px;
+
+	table {
+		margin-top: 8px;
+	}
+}
+
+.rdbk-warn-list {
+	margin: 4px 0 0 18px;
+	list-style: disc;
+
+	li {
+		color: $rdbk-amber-text;
+	}
+}
+
+// ── Live job log ─────────────────────────────────────────────────────────────
+.rdbk-log {
+	max-height: 220px;
+	margin-top: 10px;
+	padding: 10px 12px;
+	overflow: auto;
+	background: #1e1e1e;
+	color: #d4d4d4;
+	font-size: 12px;
+	line-height: 1.5;
+	white-space: pre-wrap;
+	border-radius: 4px;
+}
+
+// ── Restore confirm ──────────────────────────────────────────────────────────
+.rdbk-restore-apply input[type="text"] {
+	width: 150px;
+}
+
+.rdbk-danger {
+	border-color: $rdbk-red;
+	color: $rdbk-red;
+
+	&:not(:disabled):hover {
+		background: $rdbk-red;
+		border-color: $rdbk-red;
+		color: $rdbk-white;
+	}
+}
+
+// ── Toggle switch (1:1 with the theme's .rd-pswitch) ─────────────────────────
+.rdbk-pswitch {
+	position: relative;
+	display: inline-block;
+	width: 44px;
+	height: 21px;
+	margin: 0;
+	padding: 0;
+	border: none;
+	background: transparent;
+	cursor: pointer;
+	vertical-align: middle;
+
+	&:focus {
+		outline: none;
+	}
+
+	&:focus-visible .rdbk-pswitch__track {
+		box-shadow: 0 0 0 2px $rdbk-blue;
+	}
+
+	&__track {
+		position: absolute;
+		inset: 0;
+		background: $rdbk-border;
+		border-radius: 12px;
+		transition: background 0.15s ease;
+	}
+
+	&__thumb {
+		position: absolute;
+		top: 3px;
+		left: 3px;
+		width: 15px;
+		height: 15px;
+		background: $rdbk-white;
+		border-radius: 50%;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+		transition: left 0.15s ease;
+	}
+
+	&[aria-checked="true"] .rdbk-pswitch__track {
+		background: $rdbk-green;
+	}
+
+	&[aria-checked="true"] .rdbk-pswitch__thumb {
+		left: 25px;
+	}
+
+	&.is-loading {
+		cursor: wait;
+		pointer-events: none;
+
+		.rdbk-pswitch__track {
+			opacity: 0.5;
+		}
+	}
+
+	&.is-error .rdbk-pswitch__track {
+		background: $rdbk-red;
+		animation: rdbk-pswitch-shake 0.3s ease-out;
+	}
+}
+
+@keyframes rdbk-pswitch-shake {
+	0%, 100% {
+		transform: translateX(0);
+	}
+	25% {
+		transform: translateX(-2px);
+	}
+	75% {
+		transform: translateX(2px);
+	}
+}
+
+// ── Updates card (1:1 with the theme's .rd-self-update) ──────────────────────
+.rdbk-self-update {
+	&__header {
+		// The controls float to the top-right (out of flow; in the markup they come
+		// BEFORE the title so the float can sit beside it). The title sits at the
+		// top and the version grid rises right beneath it.
+		margin: 0 0 14px;
+	}
+
+	&__title {
+		margin: 0;
+		color: $rdbk-text;
+		font-size: 14px;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.3px;
+	}
+
+	&__controls {
+		float: right;
+		margin-left: 16px;
+		display: inline-flex;
+		flex-direction: column-reverse;
+		align-items: flex-end;
+		gap: 8px;
+	}
+
+	&__channel {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	&__channel-label {
+		color: $rdbk-text-secondary;
+		font-size: 12px;
+		font-weight: 600;
+	}
+
+	&__grid {
+		display: grid;
+		grid-template-columns: max-content 1fr;
+		align-items: center;
+		gap: 8px 16px;
+		margin: 0 0 12px;
+
+		dt {
+			color: $rdbk-text-secondary;
+			font-size: 13px;
+			font-weight: 600;
+		}
+
+		dd {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			margin: 0;
+			font-size: 13px;
+
+			code {
+				padding: 2px 6px;
+				background: $rdbk-border-faint;
+				border-radius: 3px;
+				font-size: 12px;
+			}
+		}
+	}
+
+	&__action {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		margin: 0;
+		padding-top: 6px;
+		border-top: 1px solid $rdbk-border-faint;
+
+		&:empty {
+			display: none;
+		}
+	}
+}
+
+// Dashicon buttons (check / update now) — center the glyph so the spin is true.
+#rdbk-update-check,
+.wp-core-ui .rdbk-update-now {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+#rdbk-update-check .dashicons,
+.wp-core-ui .rdbk-update-now .dashicons {
+	width: 18px;
+	height: 18px;
+	font-size: 18px;
+	line-height: 18px;
+	transform-origin: 50% 50%;
+}
+
+#rdbk-update-check.is-loading {
+	opacity: 0.7;
+	cursor: wait;
+
+	.dashicons-update {
+		animation: rdbk-spin 0.8s linear infinite;
+	}
+}
+
+@keyframes rdbk-spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}

@@ -137,7 +137,7 @@
 		}
 		post( 'rdbk_step' ).then( function ( r ) {
 			if ( ! r || ! r.success ) {
-				bkFinish( i18n.failed || 'Failed.' );
+				bkFinish( ( r && r.data && r.data.message ) || i18n.failed || 'Failed.' );
 				return;
 			}
 			var d = r.data || {};
@@ -171,7 +171,7 @@
 			bkSetStatus( i18n.starting || 'Starting…' );
 			post( 'rdbk_start', { type: 'backup' } ).then( function ( r ) {
 				if ( ! r || ! r.success ) {
-					bkFinish( i18n.failed || 'Failed.' );
+					bkFinish( ( r && r.data && r.data.message ) || i18n.failed || 'Failed.' );
 					return;
 				}
 				var d = r.data || {};
@@ -259,7 +259,7 @@
 			'</tbody></table>' +
 			'<h4>' + esc( i18n.warningsLbl || 'Warnings' ) + '</h4>' + warns +
 			'</div>' +
-			restoreControlsHtml() +
+			( false === d.integrity ? integrityBlockedHtml() : restoreControlsHtml() ) +
 			'</div>';
 		wireRestoreControls();
 	}
@@ -277,6 +277,15 @@
 			'<p class="rdbk-progress__status" id="rdbk-restore-status" aria-live="polite"></p></div>' +
 			'<div id="rdbk-restore-msg"></div>' +
 			'<pre id="rdbk-restore-log" class="rdbk-log" hidden></pre></div>';
+	}
+
+	// Shown INSTEAD of the restore controls when the archive fails its integrity
+	// check — a corrupt/tampered backup must not be restorable at all.
+	function integrityBlockedHtml() {
+		return '<div class="rdbk-card rdbk-card--danger">' +
+			'<p class="rdbk-card__title">' + esc( i18n.intBlockedTitle || 'Restore blocked' ) + '</p>' +
+			'<p>' + esc( i18n.intBlocked || 'This archive failed its integrity check (corrupt or tampered database) and cannot be restored.' ) + '</p>' +
+			'</div>';
 	}
 
 	function wireRestoreControls() {

@@ -49,3 +49,7 @@ tools/wp-cli.phar
 
 # === Working files (scratch local) ===
 tmp/
+
+# === QA interno (plano de testes + scripts de integridade) ===
+# NUNCA versionar nem distribuir — uso local de validação do backup.
+qa/

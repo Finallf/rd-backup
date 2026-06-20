@@ -87,6 +87,21 @@ class RDBK_Runner {
 		} elseif ( 'restore' === $type ) {
 			// phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified in guard() before this runs.
 			$file = isset( $_POST['file'] ) ? sanitize_text_field( wp_unslash( $_POST['file'] ) ) : '';
+
+			// Re-validate server-side — never trust the browser's preview. A
+			// failed integrity check (sha256 mismatch = corrupt / truncated /
+			// tampered .sql) MUST hard-block the restore, not merely warn. A null
+			// result (no hash in the manifest) can't be proven bad, so it passes.
+			$inspect = RDBK_Restore::instance()->inspect( $file );
+			if ( empty( $inspect['ok'] ) ) {
+				$job->clear();
+				wp_send_json_error( array( 'message' => $inspect['error'] ), 400 );
+			}
+			if ( false === $inspect['integrity'] ) {
+				$job->clear();
+				wp_send_json_error( array( 'message' => __( 'Integrity check failed — the archive is corrupt or its database was tampered with. Restore aborted.', 'rd-backup' ) ), 400 );
+			}
+
 			if ( ! RDBK_Restore::instance()->init_restore( $job, $file ) ) {
 				$job->clear();
 				wp_send_json_error( array( 'message' => __( 'Could not start the restore (archive not found or unreadable).', 'rd-backup' ) ), 400 );
@@ -116,6 +131,14 @@ class RDBK_Runner {
 			RDBK_Backup::instance()->step( $job );
 		} elseif ( 'restore' === $type ) {
 			RDBK_Restore::instance()->step_restore( $job );
+		}
+
+		// A step can mark the job failed (e.g. a backup that fails its post-build
+		// integrity verification). Surface it as an error and drop the job file.
+		if ( 'error' === $job->get( 'status' ) ) {
+			$message = (string) $job->get( 'error', __( 'The job failed.', 'rd-backup' ) );
+			$job->clear();
+			wp_send_json_error( array( 'message' => $message ) );
 		}
 
 		$payload = $this->payload( $job );

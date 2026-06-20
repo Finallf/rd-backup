@@ -121,6 +121,19 @@ class RDBK_Backup {
 			$wp_filesystem->rmdir( $work_dir );
 		}
 
+		// Self-verify the freshly published archive: re-hash its database.sql
+		// against the manifest. A bad write (disk / ZipArchive error) is caught
+		// NOW, not on the day the backup is needed — the corrupt archive is
+		// deleted and the job fails with a clear message.
+		if ( file_exists( $final_path ) && ! RDBK_Restore::instance()->verify_archive( $final_path ) ) {
+			wp_delete_file( $final_path );
+			$job->log( 'Verification FAILED — the new archive did not match its checksum and was deleted.' );
+			$job->set( 'status', 'error' );
+			$job->set( 'error', __( 'Backup verification failed — the archive was corrupt and has been removed. Please try again.', 'rd-backup' ) );
+			$job->save();
+			return;
+		}
+
 		$size = file_exists( $final_path ) ? (int) filesize( $final_path ) : 0;
 		$job->log( 'Backup created: ' . $final_name . ' (' . size_format( $size ) . ').' );
 		$job->set(

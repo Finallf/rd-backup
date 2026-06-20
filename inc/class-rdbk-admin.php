@@ -92,6 +92,8 @@ class RDBK_Admin {
 					'intOk'            => __( 'verified', 'rd-backup' ),
 					'intFail'          => __( 'FAILED — archive may be corrupt', 'rd-backup' ),
 					'intUnknown'       => __( 'no hash in manifest', 'rd-backup' ),
+					'intBlockedTitle'  => __( 'Restore blocked', 'rd-backup' ),
+					'intBlocked'       => __( 'This archive failed its integrity check (corrupt or tampered database) and cannot be restored.', 'rd-backup' ),
 					'warningsLbl'      => __( 'Warnings', 'rd-backup' ),
 					'noWarnings'       => __( 'No compatibility warnings.', 'rd-backup' ),
 					'restoreWarnTitle' => __( 'Heads up:', 'rd-backup' ),
@@ -451,7 +453,6 @@ class RDBK_Admin {
 		?>
 		<div class="rdbk-card rdbk-self-update">
 			<div class="rdbk-self-update__header">
-				<h3 class="rdbk-self-update__title"><?php esc_html_e( 'Release status', 'rd-backup' ); ?></h3>
 				<span class="rdbk-self-update__controls">
 					<span class="rdbk-self-update__channel">
 						<span class="rdbk-self-update__channel-label"><?php esc_html_e( 'Beta channel', 'rd-backup' ); ?></span>
@@ -466,6 +467,7 @@ class RDBK_Admin {
 						<?php esc_html_e( 'Check for updates', 'rd-backup' ); ?>
 					</button>
 				</span>
+				<h3 class="rdbk-self-update__title"><?php esc_html_e( 'Release status', 'rd-backup' ); ?></h3>
 			</div>
 
 			<dl class="rdbk-self-update__grid">
