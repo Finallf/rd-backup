@@ -1,0 +1,13 @@
+{
+  "name": "rd-backup",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Build tooling for the ReloadeD Backup plugin admin assets (SCSS → CSS).",
+  "scripts": {
+    "sass:build": "sass sass/rdbk-admin.scss assets/css/rdbk-admin.css --style=compressed --no-source-map",
+    "sass:watch": "sass --watch sass/rdbk-admin.scss:assets/css/rdbk-admin.css --style=compressed"
+  },
+  "devDependencies": {
+    "sass": "^1.77.0"
+  }
+}

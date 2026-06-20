@@ -82,16 +82,28 @@ jobs:
             --exclude='.editorconfig' \
             --exclude='.releaserc' \
             --exclude='docs' \
+            --exclude='sass' \
             --exclude='staging' \
             --exclude='tools' \
             --exclude='vendor' \
             --exclude='phpcs.xml.dist' \
             --exclude='composer.json' \
             --exclude='composer.lock' \
+            --exclude='package.json' \
+            --exclude='package-lock.json' \
             ./ staging/rd-backup/
           # Shipped plugin folder = rd-backup/. README.md + CHANGELOG.md are kept
-          # inside the zip on purpose (same as the theme). JS minify will be added
-          # here once the plugin grows an assets/js/ build.
+          # inside the zip on purpose (same as the theme).
+          # Minify the JS inside the PACKAGE only: the repo stays readable and the
+          # sandbox keeps sources for debugging — only shipped zips carry the
+          # minified build. A terser parse error fails the step → broken JS can
+          # never ship silently.
+          for f in staging/rd-backup/assets/js/*.js; do
+            before=$(wc -c < "$f")
+            npx --yes terser@5 "$f" --compress --mangle --comments false -o "$f"
+            after=$(wc -c < "$f")
+            echo "minified $(basename "$f"): ${before} -> ${after} bytes"
+          done
           (cd staging && zip -r ../rd-backup.zip rd-backup)
 
       - name: Upload plugin zip to release
