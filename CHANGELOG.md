@@ -7,6 +7,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## 1.0.0 (2026-06-20)
+
+### ✨ Features
+
+* **admin:** 1:1 ReloadeD-theme panel UI ([a34d188](https://github.com/Finallf/rd-backup/commit/a34d188201b6014ed7ed60f43d8d567215cb749a))
+* **admin:** show the ReloadeD logo in the panel header ([d75413e](https://github.com/Finallf/rd-backup/commit/d75413edd0208e0d5b778068eda58e758a101a72))
+* **backup:** full backup archiver — db + uploads + manifest into one .zip ([ad05c2e](https://github.com/Finallf/rd-backup/commit/ad05c2e1605d6af6903a7fc914f3d4ef0b4e15e8))
+* **backup:** resumable database dumper (PHP/wpdb) ([4173b02](https://github.com/Finallf/rd-backup/commit/4173b024d6682f5791f1eefc1f4b62e3c0292ce3))
+* **backup:** safety-snapshot retention + reset control ([eb63fbd](https://github.com/Finallf/rd-backup/commit/eb63fbdb7b20d72a528bf1060c2041ba21b61c40))
+* **core:** plugin scaffold — resumable job engine, admin UI, health-check ([174a50a](https://github.com/Finallf/rd-backup/commit/174a50ac9a12a785dc0fcbc1dea39fdeb178fb49))
+* **restore:** apply restore — safety backup + resumable DB import ([063b2d7](https://github.com/Finallf/rd-backup/commit/063b2d703769c9f43d7560e1f11619b9884f4e43))
+* **restore:** extract uploads — completes the same-domain restore ([823f113](https://github.com/Finallf/rd-backup/commit/823f1133ba811b5541e8ca96955f198365193539))
+* **restore:** read-only preview — validate manifest, integrity, warnings ([1f85dfc](https://github.com/Finallf/rd-backup/commit/1f85dfce65763fa395d54d0f2323278f738e75b5))
+* **restore:** serialized-safe search-replace for cross-domain restores ([da2c593](https://github.com/Finallf/rd-backup/commit/da2c593bd4f596ae3389d35123fa6066e1342430))
+* **restore:** upload a backup .zip from the admin ([85d0fe7](https://github.com/Finallf/rd-backup/commit/85d0fe77b38aec880bb82d85d8ed80e451b66711))
+* **storage:** secure backup store — token names + PHP-only download ([7b9302c](https://github.com/Finallf/rd-backup/commit/7b9302cbbcb379b925f07a9d11989ca38b0f52f0))
+* **updater:** GitHub self-updater + Updates card (1:1 with the theme) ([ea20e47](https://github.com/Finallf/rd-backup/commit/ea20e47a0e4018a2a5f4c15f76a0bf3cc30401bb))
+
+### 🐛 Bug Fixes
+
+* **backup:** escape dump values with mysqli_real_escape_string ([ddb1b9f](https://github.com/Finallf/rd-backup/commit/ddb1b9f7da4953d84125e2c998be853e5efa2630))
+* **restore:** harden the job loop and surface import failures ([b576fc4](https://github.com/Finallf/rd-backup/commit/b576fc4cbd029af03a68316514008e93e47cca18))
+* **restore:** survive the full-database swap (cross-domain restore) ([9db1329](https://github.com/Finallf/rd-backup/commit/9db13299acce66e3708fa1e3a3eddf36ad573260))
+* **updater:** pick the highest semver release, not [0] ([16e0add](https://github.com/Finallf/rd-backup/commit/16e0addd64e1c3aadac49f7ad983135e537f7fed))
+
+### ♻️ Code Refactoring
+
+* clean dev scaffolding and rename to ReloadeD Backup ([a890b9c](https://github.com/Finallf/rd-backup/commit/a890b9c9ef06c5e6e3ab6fce4237123b196f549f))
+
+### 📝 Documentation
+
+* **contributor:** contrib-readme-action has updated readme ([bd35a26](https://github.com/Finallf/rd-backup/commit/bd35a26fe984e52e3805b4e5c2e242b8faf511c3))
+* **contributor:** contrib-readme-action has updated readme ([9513c6c](https://github.com/Finallf/rd-backup/commit/9513c6c03e6f723e545eb79709730a5070019bb3))
+* rewrite the README in the ReloadeD style ([b48ed24](https://github.com/Finallf/rd-backup/commit/b48ed248ebf895a2e5df2606cc21acdc894ba8dc))
+
+<br>
+
+---
+
 ## [1.0.0-beta.16](https://github.com/Finallf/rd-backup/compare/v1.0.0-beta.15...v1.0.0-beta.16) (2026-06-19)
 
 ### ✨ Features
