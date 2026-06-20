@@ -81,6 +81,7 @@ jobs:
             --exclude='.gitattributes' \
             --exclude='.editorconfig' \
             --exclude='.releaserc' \
+            --exclude='docs' \
             --exclude='staging' \
             --exclude='tools' \
             --exclude='vendor' \
