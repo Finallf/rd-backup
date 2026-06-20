@@ -4,34 +4,29 @@
 
 ```
 rd-backup.php                      Plugin header + bootstrap (requires + hooks)
-inc/
+inc/                               All classes live flat here (one class per file)
   class-rdbk-plugin.php            Orchestrator — boots the runner, storage, admin, updater
   class-rdbk-updater.php           GitHub self-updater (see Development)
-  job/
-    class-rdbk-job.php             Resumable job state (a JSON file in the store)
-    class-rdbk-runner.php          admin-ajax endpoints: start / step / cancel / upload / preview
-  storage/
-    class-rdbk-storage.php         The store: directory, hardening, naming, download handler
-  backup/
-    class-rdbk-db-dump.php         PHP / $wpdb database dump
-    class-rdbk-archiver.php        ZipArchive append (uploads + sql)
-    class-rdbk-manifest.php        manifest.json builder
-    class-rdbk-backup.php          Backup orchestrator (db -> uploads -> finalize)
-  restore/
-    class-rdbk-db-import.php       Statement-by-statement SQL import
-    class-rdbk-search-replace.php  Serialized-safe URL replace (cross-domain)
-    class-rdbk-uploads-extract.php Streams uploads/ out of the zip
-    class-rdbk-restore.php         Restore orchestrator (import -> replace -> uploads)
-  admin/
-    class-rdbk-admin.php           Tools -> ReloadeD Backup screen (tabs, AJAX wiring)
-    class-rdbk-healthcheck.php     Preflight checks
+  class-rdbk-job.php               Resumable job state (a JSON file in the store)
+  class-rdbk-runner.php            admin-ajax endpoints: start / step / cancel / upload / preview
+  class-rdbk-storage.php           The store: directory, hardening, naming, download handler
+  class-rdbk-db-dump.php           PHP / $wpdb database dump
+  class-rdbk-archiver.php          ZipArchive append (uploads + sql)
+  class-rdbk-manifest.php          manifest.json builder
+  class-rdbk-backup.php            Backup orchestrator (db -> uploads -> finalize)
+  class-rdbk-db-import.php         Statement-by-statement SQL import
+  class-rdbk-search-replace.php    Serialized-safe URL replace (cross-domain)
+  class-rdbk-uploads-extract.php   Streams uploads/ out of the zip
+  class-rdbk-restore.php           Restore orchestrator (import -> replace -> uploads)
+  class-rdbk-admin.php             Tools -> ReloadeD Backup screen (tabs, AJAX wiring)
+  class-rdbk-healthcheck.php       Preflight checks
 assets/
   css/rdbk-admin.css               Admin UI (native wp-admin palette)
   js/rdbk-admin.js                 Admin behavior (unobtrusive, CSP-safe)
   img/                             Logo
 ```
 
-All classes are prefixed `RDBK_`, the text-domain and slug are `rd-backup`, and globals use the `rdbk` / `RDBK` prefix.
+All classes live flat in `inc/` (one class per file, like the ReloadeD theme), are prefixed `RDBK_`, the text-domain and slug are `rd-backup`, and globals use the `rdbk` / `RDBK` prefix.
 
 ## The resumable job engine
 

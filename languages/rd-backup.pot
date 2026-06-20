@@ -1,0 +1,567 @@
+# Copyright (C) 2026 Regis Vieira Delgado
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: ReloadeD Backup 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rd-backup\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-06-19T23:31:24-03:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: rd-backup\n"
+
+#. Plugin Name of the plugin
+#: rd-backup.php
+#: inc/class-rdbk-admin.php:41
+#: inc/class-rdbk-admin.php:42
+#: inc/class-rdbk-admin.php:137
+#: inc/class-rdbk-admin.php:143
+msgid "ReloadeD Backup"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: rd-backup.php
+msgid "https://github.com/Finallf/rd-backup"
+msgstr ""
+
+#. Description of the plugin
+#: rd-backup.php
+msgid "Complete, portable WordPress backup & restore — a full database dump plus the uploads folder in a single .zip, restorable on any host. Pairs with the ReloadeD theme but runs standalone with any theme."
+msgstr ""
+
+#. Author of the plugin
+#: rd-backup.php
+msgid "Regis Vieira Delgado"
+msgstr ""
+
+#. Author URI of the plugin
+#: rd-backup.php
+msgid "https://reloaded.com.br"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:77
+msgid "Starting…"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:78
+msgid "Working…"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:79
+msgid "Done!"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:80
+msgid "Cancelled."
+msgstr ""
+
+#: inc/class-rdbk-admin.php:81
+msgid "Failed. Check the logs."
+msgstr ""
+
+#: inc/class-rdbk-admin.php:82
+#: inc/class-rdbk-admin.php:258
+msgid "No archives yet."
+msgstr ""
+
+#: inc/class-rdbk-admin.php:83
+#: inc/class-rdbk-admin.php:268
+msgid "Download"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:84
+#: inc/class-rdbk-admin.php:270
+msgid "Delete"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:85
+msgid "Delete this file?"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:86
+msgid "Backup created:"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:87
+msgid "Reading archive…"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:88
+msgid "Origin"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:89
+msgid "Created"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:90
+msgid "Contents"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:91
+msgid "Integrity"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:92
+msgid "verified"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:93
+msgid "FAILED — archive may be corrupt"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:94
+msgid "no hash in manifest"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:95
+msgid "Warnings"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:96
+msgid "No compatibility warnings."
+msgstr ""
+
+#: inc/class-rdbk-admin.php:97
+msgid "Heads up:"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:98
+msgid "This overwrites the current database. A full safety backup is taken first. You will be signed out when it finishes (the restore replaces the users table) — just log back in."
+msgstr ""
+
+#: inc/class-rdbk-admin.php:99
+msgid "Type RESTORE to confirm:"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:100
+msgid "Restore this backup"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:101
+msgid "Creating safety backup…"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:102
+msgid "Restoring…"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:103
+msgid "Restore complete. You may need to log in again — reload the page to see the restored site."
+msgstr ""
+
+#: inc/class-rdbk-admin.php:104
+msgid "Clear the current job state? This does not touch your backups."
+msgstr ""
+
+#: inc/class-rdbk-admin.php:105
+msgid "Job state cleared."
+msgstr ""
+
+#: inc/class-rdbk-admin.php:106
+msgid "Choose a .zip first."
+msgstr ""
+
+#: inc/class-rdbk-admin.php:107
+msgid "Only .zip backups can be uploaded."
+msgstr ""
+
+#: inc/class-rdbk-admin.php:108
+msgid "Uploading…"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:109
+msgid "Uploaded — refreshing…"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:110
+#: inc/class-rdbk-admin.php:491
+msgid "Update now"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:111
+#: inc/class-rdbk-admin.php:497
+msgid "View release on GitHub"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:112
+msgid "just now"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:126
+#: inc/class-rdbk-admin.php:188
+#: inc/class-rdbk-admin.php:317
+msgid "Backup"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:127
+#: inc/class-rdbk-admin.php:281
+msgid "Restore"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:128
+msgid "Health"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:193
+msgid "Create a backup"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:195
+msgid "Builds a complete .zip — the full database dump plus the uploads folder — and saves it to the store below."
+msgstr ""
+
+#: inc/class-rdbk-admin.php:198
+msgid "Create backup"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:210
+#: inc/class-rdbk-healthcheck.php:64
+msgid "Backup store"
+msgstr ""
+
+#. translators: %s: absolute path to the store directory
+#: inc/class-rdbk-admin.php:215
+#, php-format
+msgid "Backups are stored in %s — outside the plugin and outside uploads. Files carry a random token and are only downloadable through an authenticated handler, never a direct URL."
+msgstr ""
+
+#: inc/class-rdbk-admin.php:224
+msgid "File"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:225
+#: inc/class-rdbk-admin.php:318
+#: inc/class-rdbk-admin.php:350
+msgid "Size"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:226
+#: inc/class-rdbk-admin.php:319
+#: inc/class-rdbk-admin.php:351
+msgid "Date"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:237
+msgid "Optional — for nginx (including nginx-in-front setups like HestiaCP, where the .htaccess can be bypassed), add this server-level deny rule for defense in depth:"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:244
+msgid "Maintenance"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:246
+msgid "Reset job state"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:249
+msgid "Clears a stuck backup or restore job if one was interrupted. Your backups are not touched."
+msgstr ""
+
+#: inc/class-rdbk-admin.php:286
+msgid "Upload a backup"
+msgstr ""
+
+#. translators: %s: maximum upload size, e.g. 256 MB
+#: inc/class-rdbk-admin.php:291
+#, php-format
+msgid "Upload a ReloadeD Backup .zip from another site (up to %s here). For larger archives, drop the file into the store via SFTP instead."
+msgstr ""
+
+#: inc/class-rdbk-admin.php:298
+msgid "Upload"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:310
+msgid "Restore from a backup"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:312
+msgid "Select a backup to inspect it. This is read-only: it validates the archive and previews what a restore would do — nothing is changed. To restore a backup from another site, drop its .zip into the store via SFTP and it shows up here."
+msgstr ""
+
+#: inc/class-rdbk-admin.php:325
+msgid "No backups in the store yet — create one in the Backup tab, or drop a .zip via SFTP."
+msgstr ""
+
+#: inc/class-rdbk-admin.php:332
+#: inc/class-rdbk-admin.php:361
+msgid "Preview"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:342
+msgid "Safety snapshots"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:344
+msgid "Full backups taken automatically right before each restore (the last 2 are kept). Restore one to undo your last restore."
+msgstr ""
+
+#: inc/class-rdbk-admin.php:349
+msgid "Snapshot"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:379
+msgid "Updates"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:390
+msgid "Environment"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:395
+msgid "Preflight checks"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:399
+msgid "Check"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:400
+msgid "Result"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:401
+msgid "Notes"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:441
+msgid "Never checked"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:442
+msgid "never"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:445
+#: inc/class-rdbk-updater.php:321
+msgid "Update available"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:445
+#: inc/class-rdbk-updater.php:321
+msgid "Up to date"
+msgstr ""
+
+#. translators: %s: human-readable time-ago, e.g. "2 hours"
+#: inc/class-rdbk-admin.php:448
+#, php-format
+msgid "%s ago"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:449
+#: inc/class-rdbk-healthcheck.php:43
+#: inc/class-rdbk-healthcheck.php:56
+msgid "unknown"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:454
+msgid "Release status"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:457
+#: inc/class-rdbk-admin.php:461
+msgid "Beta channel"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:466
+msgid "Check for updates"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:472
+msgid "Current version"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:475
+msgid "Latest version"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:479
+msgid "BETA"
+msgstr ""
+
+#: inc/class-rdbk-admin.php:482
+msgid "Last check"
+msgstr ""
+
+#: inc/class-rdbk-healthcheck.php:25
+msgid "ZIP extension (ZipArchive)"
+msgstr ""
+
+#: inc/class-rdbk-healthcheck.php:27
+msgid "available"
+msgstr ""
+
+#: inc/class-rdbk-healthcheck.php:27
+#: inc/class-rdbk-healthcheck.php:68
+msgid "missing"
+msgstr ""
+
+#: inc/class-rdbk-healthcheck.php:28
+msgid "Enable the PHP \"zip\" extension — required to build and restore archives."
+msgstr ""
+
+#: inc/class-rdbk-healthcheck.php:33
+msgid "Writable wp-content/"
+msgstr ""
+
+#: inc/class-rdbk-healthcheck.php:35
+msgid "writable"
+msgstr ""
+
+#: inc/class-rdbk-healthcheck.php:35
+msgid "not writable"
+msgstr ""
+
+#: inc/class-rdbk-healthcheck.php:36
+msgid "The backup store (wp-content/rd-backup/) cannot be created. Fix folder permissions."
+msgstr ""
+
+#: inc/class-rdbk-healthcheck.php:41
+msgid "Free disk space"
+msgstr ""
+
+#: inc/class-rdbk-healthcheck.php:44
+msgid "Needs room for the database dump plus the uploads folder, with headroom."
+msgstr ""
+
+#: inc/class-rdbk-healthcheck.php:47
+msgid "PHP max_execution_time"
+msgstr ""
+
+#: inc/class-rdbk-healthcheck.php:48
+msgid "PHP memory_limit"
+msgstr ""
+
+#: inc/class-rdbk-healthcheck.php:49
+msgid "PHP upload_max_filesize"
+msgstr ""
+
+#: inc/class-rdbk-healthcheck.php:50
+msgid "PHP post_max_size"
+msgstr ""
+
+#: inc/class-rdbk-healthcheck.php:54
+msgid "Web server"
+msgstr ""
+
+#: inc/class-rdbk-healthcheck.php:67
+msgid "ready & protected"
+msgstr ""
+
+#: inc/class-rdbk-healthcheck.php:67
+msgid "exists (unprotected)"
+msgstr ""
+
+#: inc/class-rdbk-healthcheck.php:80
+msgid "n/a"
+msgstr ""
+
+#: inc/class-rdbk-healthcheck.php:112
+msgid "The backup store is protected by a random token + PHP-only download — works on any server."
+msgstr ""
+
+#: inc/class-rdbk-healthcheck.php:115
+msgid "Token-protected backup, exclusive download, and .htaccess. Note: If Nginx runs before Apache (e.g., HestiaCP), it serves static files directly and ignores the .htaccess file. Create a rule in Nginx for extra protection."
+msgstr ""
+
+#: inc/class-rdbk-healthcheck.php:118
+msgid "On nginx, optionally add a server-level deny rule (you control the config) for defense in depth."
+msgstr ""
+
+#: inc/class-rdbk-restore.php:44
+#: inc/class-rdbk-storage.php:298
+msgid "Backup file not found."
+msgstr ""
+
+#: inc/class-rdbk-restore.php:52
+msgid "Could not open the archive."
+msgstr ""
+
+#: inc/class-rdbk-restore.php:61
+msgid "Not a ReloadeD Backup archive (no manifest.json)."
+msgstr ""
+
+#: inc/class-rdbk-restore.php:70
+msgid "The manifest is missing or invalid."
+msgstr ""
+
+#: inc/class-rdbk-restore.php:78
+msgid "This backup was made by a newer version of ReloadeD Backup — update the plugin to restore it."
+msgstr ""
+
+#. translators: 1: origin domain, 2: this site's domain
+#: inc/class-rdbk-restore.php:308
+#, php-format
+msgid "Origin domain (%1$s) differs from this site (%2$s) — a search-replace will run on restore."
+msgstr ""
+
+#: inc/class-rdbk-restore.php:315
+msgid "The multisite flag differs between the backup and this site."
+msgstr ""
+
+#. translators: 1: origin PHP version, 2: this site's PHP version
+#: inc/class-rdbk-restore.php:322
+#, php-format
+msgid "Backup was made on PHP %1$s; this site runs %2$s (older) — watch for incompatibilities."
+msgstr ""
+
+#. translators: 1: origin WP version, 2: this site's WP version
+#: inc/class-rdbk-restore.php:334
+#, php-format
+msgid "Backup was made on WordPress %1$s; this site runs %2$s (older)."
+msgstr ""
+
+#: inc/class-rdbk-restore.php:342
+msgid "A persistent object-cache drop-in (e.g. Redis) is active here — if the restored target has no Redis, it may need to be removed."
+msgstr ""
+
+#: inc/class-rdbk-runner.php:50
+#: inc/class-rdbk-updater.php:293
+#: inc/class-rdbk-updater.php:334
+msgid "Permission denied."
+msgstr ""
+
+#: inc/class-rdbk-runner.php:76
+msgid "Unknown job type."
+msgstr ""
+
+#: inc/class-rdbk-runner.php:92
+msgid "Could not start the restore (archive not found or unreadable)."
+msgstr ""
+
+#: inc/class-rdbk-runner.php:110
+msgid "No active job."
+msgstr ""
+
+#: inc/class-rdbk-runner.php:148
+msgid "File not found."
+msgstr ""
+
+#: inc/class-rdbk-runner.php:165
+msgid "The file is larger than this server allows — upload it via SFTP instead."
+msgstr ""
+
+#: inc/class-rdbk-runner.php:166
+msgid "Upload failed — no file received."
+msgstr ""
+
+#: inc/class-rdbk-runner.php:177
+msgid "Only valid .zip backups can be uploaded."
+msgstr ""
+
+#: inc/class-rdbk-storage.php:288
+msgid "You do not have permission to download backups."
+msgstr ""
+
+#: inc/class-rdbk-updater.php:285
+msgid "Failed to rename the plugin directory during update."
+msgstr ""
+
+#: inc/class-rdbk-updater.php:309
+msgid "Could not reach GitHub. Try again later."
+msgstr ""

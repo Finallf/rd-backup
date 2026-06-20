@@ -27,22 +27,34 @@ define( 'RDBK_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
  * Module bootstrap. Engine classes live in inc/; the orchestrator wires the
  * admin UI, the resumable job runner and the environment health-check.
  */
-require_once RDBK_PLUGIN_DIR . 'inc/job/class-rdbk-job.php';
-require_once RDBK_PLUGIN_DIR . 'inc/job/class-rdbk-runner.php';
-require_once RDBK_PLUGIN_DIR . 'inc/storage/class-rdbk-storage.php';
-require_once RDBK_PLUGIN_DIR . 'inc/backup/class-rdbk-db-dump.php';
-require_once RDBK_PLUGIN_DIR . 'inc/backup/class-rdbk-archiver.php';
-require_once RDBK_PLUGIN_DIR . 'inc/backup/class-rdbk-manifest.php';
-require_once RDBK_PLUGIN_DIR . 'inc/backup/class-rdbk-backup.php';
-require_once RDBK_PLUGIN_DIR . 'inc/restore/class-rdbk-db-import.php';
-require_once RDBK_PLUGIN_DIR . 'inc/restore/class-rdbk-uploads-extract.php';
-require_once RDBK_PLUGIN_DIR . 'inc/restore/class-rdbk-search-replace.php';
-require_once RDBK_PLUGIN_DIR . 'inc/restore/class-rdbk-restore.php';
-require_once RDBK_PLUGIN_DIR . 'inc/admin/class-rdbk-healthcheck.php';
-require_once RDBK_PLUGIN_DIR . 'inc/admin/class-rdbk-admin.php';
+require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-job.php';
+require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-runner.php';
+require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-storage.php';
+require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-db-dump.php';
+require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-archiver.php';
+require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-manifest.php';
+require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-backup.php';
+require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-db-import.php';
+require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-uploads-extract.php';
+require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-search-replace.php';
+require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-restore.php';
+require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-healthcheck.php';
+require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-admin.php';
 require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-updater.php';
 require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-plugin.php';
 
 add_action( 'plugins_loaded', array( 'RDBK_Plugin', 'instance' ) );
 register_activation_hook( __FILE__, array( 'RDBK_Storage', 'on_activation' ) );
 register_deactivation_hook( __FILE__, array( 'RDBK_Storage', 'on_deactivation' ) );
+
+/*
+ * Load the plugin's translations from /languages. Hooked on init (not
+ * plugins_loaded) because WP 6.7+ emits a doing_it_wrong notice when a text
+ * domain is loaded before the locale is set up.
+ */
+add_action(
+	'init',
+	static function () {
+		load_plugin_textdomain( 'rd-backup', false, dirname( plugin_basename( RDBK_PLUGIN_FILE ) ) . '/languages' );
+	}
+);
