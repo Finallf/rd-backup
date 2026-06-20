@@ -291,15 +291,16 @@
 	flex-shrink: 0;
 }
 
-/* --- nginx snippet --- */
+/* --- nginx snippet (mirrors the theme's .rd-robots-defaults strip) --- */
 .rdbk-snippet {
-	max-width: 257px;
-	margin: 0;
-	padding: 10px 12px;
-	background: #2b2d31;
-	color: #e7e9ea;
-	border-radius: 4px;
-	overflow: auto;
+	margin: 6px 0;
+	padding: 8px 12px;
+	background: #f6f7f7;
+	border-left: 3px solid #c3c4c7;
+	font-size: 12px;
+	line-height: 1.5;
+	white-space: pre-wrap;
+	overflow-x: auto;
 }
 
 /* --- Restore preview --- */
@@ -428,10 +429,9 @@
 
 /* --- Updates card (1:1 with the theme's .rd-self-update) --- */
 .rdbk-self-update__header {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 12px;
+	/* The controls float to the top-right (out of flow; in the markup they come
+	   BEFORE the title so the float can sit beside it). The title sits at the
+	   top and the version grid rises right beneath it. */
 	margin: 0 0 14px;
 }
 
@@ -445,6 +445,8 @@
 }
 
 .rdbk-self-update__controls {
+	float: right;
+	margin-left: 16px;
 	display: inline-flex;
 	flex-direction: column-reverse;
 	align-items: flex-end;

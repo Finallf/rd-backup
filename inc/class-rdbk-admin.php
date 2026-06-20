@@ -451,7 +451,6 @@ class RDBK_Admin {
 		?>
 		<div class="rdbk-card rdbk-self-update">
 			<div class="rdbk-self-update__header">
-				<h3 class="rdbk-self-update__title"><?php esc_html_e( 'Release status', 'rd-backup' ); ?></h3>
 				<span class="rdbk-self-update__controls">
 					<span class="rdbk-self-update__channel">
 						<span class="rdbk-self-update__channel-label"><?php esc_html_e( 'Beta channel', 'rd-backup' ); ?></span>
@@ -466,6 +465,7 @@ class RDBK_Admin {
 						<?php esc_html_e( 'Check for updates', 'rd-backup' ); ?>
 					</button>
 				</span>
+				<h3 class="rdbk-self-update__title"><?php esc_html_e( 'Release status', 'rd-backup' ); ?></h3>
 			</div>
 
 			<dl class="rdbk-self-update__grid">
