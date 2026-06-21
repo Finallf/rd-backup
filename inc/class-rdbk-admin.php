@@ -34,6 +34,7 @@ class RDBK_Admin {
 	private function __construct() {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
+		add_action( 'wp_ajax_rdbk_save_retention', array( $this, 'ajax_save_retention' ) );
 	}
 
 	public function register_menu(): void {
@@ -113,6 +114,7 @@ class RDBK_Admin {
 					'updateNow'        => __( 'Update now', 'rd-backup' ),
 					'viewRelease'      => __( 'View release on GitHub', 'rd-backup' ),
 					'justNow'          => __( 'just now', 'rd-backup' ),
+					'saved'            => __( 'Saved.', 'rd-backup' ),
 				),
 			)
 		);
@@ -219,6 +221,26 @@ class RDBK_Admin {
 							'<code>' . esc_html( RDBK_Storage::instance()->dir() ) . '</code>'
 						);
 						?>
+					</p>
+
+					<p class="rdbk-retention-row">
+						<label for="rdbk-retention"><?php esc_html_e( 'Backups to keep:', 'rd-backup' ); ?></label>
+						<select id="rdbk-retention" data-nonce="<?php echo esc_attr( wp_create_nonce( 'rdbk_save_retention' ) ); ?>">
+							<?php
+							$rdbk_keep = RDBK_Storage::instance()->retention_keep();
+							foreach ( RDBK_Storage::RETENTION_CHOICES as $rdbk_choice ) {
+								printf(
+									'<option value="%1$d"%2$s>%1$d</option>',
+									(int) $rdbk_choice,
+									selected( (int) $rdbk_choice, $rdbk_keep, false ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- selected() returns a fixed, safe attribute string.
+								);
+							}
+							?>
+						</select>
+						<span id="rdbk-retention-msg" class="rdbk-inline-msg" aria-live="polite"></span>
+					</p>
+					<p class="rdbk-card__hint">
+						<?php esc_html_e( 'After each new backup, only the most recent backups (up to this limit) are kept — older ones are deleted automatically. Safety snapshots are kept separately.', 'rd-backup' ); ?>
 					</p>
 
 					<table class="widefat striped rdbk-archives">
@@ -507,5 +529,25 @@ class RDBK_Admin {
 			?>
 		</div>
 		<?php
+	}
+
+	/**
+	 * AJAX: save the "keep last N" retention setting (the Backup-tab select).
+	 * Validates against the allowed choices before storing the option.
+	 */
+	public function ajax_save_retention(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'rd-backup' ) ), 403 );
+		}
+		check_ajax_referer( 'rdbk_save_retention', 'nonce' );
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified above.
+		$keep = isset( $_POST['keep'] ) ? (int) $_POST['keep'] : 0;
+		if ( ! in_array( $keep, RDBK_Storage::RETENTION_CHOICES, true ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid value.', 'rd-backup' ) ), 400 );
+		}
+
+		update_option( RDBK_Storage::RETENTION_OPTION, $keep );
+		wp_send_json_success( array( 'keep' => $keep ) );
 	}
 }

@@ -52,6 +52,7 @@ class RDBK_Backup {
 		$job->set( 'sql_path', $sql_path );
 		$job->set( 'zip_path', $zip_path );
 		$job->set( 'final_name', $final_name );
+		$job->set( 'kind', $kind );
 		$job->set( 'progress', 0 );
 		$job->log( ( '' !== $kind ? 'Safety backup' : 'Backup' ) . ' started — dumping database…' );
 		$job->save();
@@ -132,6 +133,13 @@ class RDBK_Backup {
 			$job->set( 'error', __( 'Backup verification failed — the archive was corrupt and has been removed. Please try again.', 'rd-backup' ) );
 			$job->save();
 			return;
+		}
+
+		// Keep the last N user backups (manual + scheduled). Safety snapshots are
+		// excluded — they have their own retention on restore. The just-published
+		// archive is the newest, so it is never the one pruned.
+		if ( 'safe' !== (string) $job->get( 'kind' ) ) {
+			$storage->enforce_retention();
 		}
 
 		$size = file_exists( $final_path ) ? (int) filesize( $final_path ) : 0;

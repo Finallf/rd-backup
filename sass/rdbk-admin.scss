@@ -79,6 +79,18 @@ $rdbk-bg-strip:       #f6f7f7; // gray strips / placeholder bg
 	}
 }
 
+// Retention "keep last N" row (Backup store card): label + select + saved msg.
+.rdbk-retention-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 4px;
+
+	label {
+		font-weight: 600;
+	}
+}
+
 // ── Section header (dashicon + title) ────────────────────────────────────────
 .rdbk-section-header {
 	display: flex;

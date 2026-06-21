@@ -633,6 +633,32 @@
 		updateCheckBtn.addEventListener( 'click', runUpdateCheck );
 	}
 
+	// --- Backup tab: retention "keep last N" select (saves on change) ---
+	var retentionSelect = document.getElementById( 'rdbk-retention' );
+	var retentionMsg    = document.getElementById( 'rdbk-retention-msg' );
+	if ( retentionSelect ) {
+		retentionSelect.addEventListener( 'change', function () {
+			if ( retentionMsg ) {
+				retentionMsg.textContent = '';
+			}
+			var body = new FormData();
+			body.append( 'action', 'rdbk_save_retention' );
+			body.append( 'nonce', retentionSelect.getAttribute( 'data-nonce' ) );
+			body.append( 'keep', retentionSelect.value );
+			fetch( cfg.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: body } ).then( function ( r ) {
+				return r.json();
+			} ).then( function ( res ) {
+				if ( retentionMsg ) {
+					retentionMsg.textContent = ( res && res.success ) ? ( i18n.saved || 'Saved.' ) : ( i18n.failed || 'Failed.' );
+				}
+			} ).catch( function () {
+				if ( retentionMsg ) {
+					retentionMsg.textContent = i18n.failed || 'Failed.';
+				}
+			} );
+		} );
+	}
+
 	if ( betaSwitch ) {
 		betaSwitch.addEventListener( 'click', function () {
 			if ( betaSwitch.classList.contains( 'is-loading' ) ) {
