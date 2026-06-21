@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.2.0-beta.4](https://github.com/Finallf/rd-backup/compare/v1.2.0-beta.3...v1.2.0-beta.4) (2026-06-21)
+
+### ✨ Features
+
+* **schedule:** automatic backups on a cron schedule ([e4a8d2e](https://github.com/Finallf/rd-backup/commit/e4a8d2e6301ffcf8685f92563741d43910d40e59))
+
+<br>
+
+---
+
 ## [1.2.0-beta.3](https://github.com/Finallf/rd-backup/compare/v1.2.0-beta.2...v1.2.0-beta.3) (2026-06-21)
 
 ### ✨ Features
