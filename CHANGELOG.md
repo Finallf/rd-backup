@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.1.1](https://github.com/Finallf/rd-backup/compare/v1.1.0...v1.1.1) (2026-06-21)
+
+### 🐛 Bug Fixes
+
+* **restore:** mirror uploads on restore, plus updater and upload-picker polish ([56b1c9b](https://github.com/Finallf/rd-backup/commit/56b1c9b06412a6add8526ab496500526876ac91e))
+
+<br>
+
+---
+
 ## [1.1.0](https://github.com/Finallf/rd-backup/compare/v1.0.0...v1.1.0) (2026-06-20)
 
 ### ✨ Features
