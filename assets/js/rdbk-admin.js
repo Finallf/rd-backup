@@ -247,7 +247,7 @@
 			( up.files || 0 ) + ' files (' + fmtBytes( up.bytes || 0 ) + ')';
 
 		previewBox.innerHTML =
-			'<div class="rdbk-pgrid">' +
+			'<div class="rdbk-pgrid rdbk-pgrid--preview">' +
 			'<div class="rdbk-card">' +
 			'<p class="rdbk-card__desc"><code>' + esc( d.file || '' ) + '</code></p>' +
 			'<table class="widefat striped"><tbody>' +
@@ -267,7 +267,7 @@
 	function restoreControlsHtml() {
 		return '<div class="rdbk-card rdbk-card--danger rdbk-restore-apply">' +
 			'<div class="rdbk-status rdbk-status--warning"><strong>' + esc( i18n.restoreWarnTitle || 'Heads up:' ) + '</strong> ' +
-			esc( i18n.restoreWarn || 'This overwrites the current database. A full safety backup is taken first. You will be signed out when it finishes (the restore replaces the users table) — just log back in.' ) + '</div>' +
+			esc( i18n.restoreWarn || 'This overwrites the current database. A full safety backup is taken first.' ) + '</div>' +
 			'<p><label>' + esc( i18n.typeRestore || 'Type RESTORE to confirm:' ) +
 			' <input type="text" id="rdbk-restore-confirm" autocomplete="off" spellcheck="false"></label> ' +
 			'<button type="button" class="button rdbk-danger" id="rdbk-restore-go" disabled>' +
@@ -631,6 +631,141 @@
 
 	if ( updateCheckBtn ) {
 		updateCheckBtn.addEventListener( 'click', runUpdateCheck );
+	}
+
+	// --- Backup tab: retention "keep last N" select (saves on change) ---
+	var retentionSelect = document.getElementById( 'rdbk-retention' );
+	var retentionMsg    = document.getElementById( 'rdbk-retention-msg' );
+	if ( retentionSelect ) {
+		retentionSelect.addEventListener( 'change', function () {
+			if ( retentionMsg ) {
+				retentionMsg.textContent = '';
+			}
+			var body = new FormData();
+			body.append( 'action', 'rdbk_save_retention' );
+			body.append( 'nonce', retentionSelect.getAttribute( 'data-nonce' ) );
+			body.append( 'keep', retentionSelect.value );
+			fetch( cfg.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: body } ).then( function ( r ) {
+				return r.json();
+			} ).then( function ( res ) {
+				if ( retentionMsg ) {
+					retentionMsg.textContent = ( res && res.success ) ? ( i18n.saved || 'Saved.' ) : ( i18n.failed || 'Failed.' );
+				}
+			} ).catch( function () {
+				if ( retentionMsg ) {
+					retentionMsg.textContent = i18n.failed || 'Failed.';
+				}
+			} );
+		} );
+	}
+
+	// --- Schedule tab: save frequency + time, re-arm the cron ---
+	var scheduleSave = document.getElementById( 'rdbk-schedule-save' );
+	if ( scheduleSave ) {
+		scheduleSave.addEventListener( 'click', function () {
+			var freq = document.getElementById( 'rdbk-schedule-freq' );
+			var time = document.getElementById( 'rdbk-schedule-time' );
+			var msg  = document.getElementById( 'rdbk-schedule-msg' );
+			var next = document.getElementById( 'rdbk-schedule-next' );
+			if ( msg ) {
+				msg.textContent = '';
+			}
+			var body = new FormData();
+			body.append( 'action', 'rdbk_save_schedule' );
+			body.append( 'nonce', scheduleSave.getAttribute( 'data-nonce' ) );
+			body.append( 'freq', freq ? freq.value : 'off' );
+			body.append( 'time', time ? time.value : '' );
+			fetch( cfg.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: body } ).then( function ( r ) {
+				return r.json();
+			} ).then( function ( res ) {
+				if ( res && res.success ) {
+					if ( msg ) {
+						msg.textContent = i18n.saved || 'Saved.';
+					}
+					if ( next && res.data ) {
+						next.textContent = res.data.next || '—';
+					}
+				} else if ( msg ) {
+					msg.textContent = i18n.failed || 'Failed.';
+				}
+			} ).catch( function () {
+				if ( msg ) {
+					msg.textContent = i18n.failed || 'Failed.';
+				}
+			} );
+		} );
+	}
+
+	// --- Schedule tab: notification settings (save + test) ---
+	var notifySave = document.getElementById( 'rdbk-notify-save' );
+	var notifyTest = document.getElementById( 'rdbk-notify-test' );
+	var notifyMsg  = document.getElementById( 'rdbk-notify-msg' );
+
+	function notifyBody( action, nonce ) {
+		var body = new FormData();
+		body.append( 'action', action );
+		body.append( 'nonce', nonce );
+		var on      = document.getElementById( 'rdbk-notify-on' );
+		var emailOn = document.getElementById( 'rdbk-notify-email' );
+		var emailTo = document.getElementById( 'rdbk-notify-email-to' );
+		var tgOn    = document.getElementById( 'rdbk-notify-telegram' );
+		var tgToken = document.getElementById( 'rdbk-notify-tg-token' );
+		var tgChat  = document.getElementById( 'rdbk-notify-tg-chat' );
+		body.append( 'on', on ? on.value : 'failures' );
+		body.append( 'email_on', ( emailOn && emailOn.checked ) ? '1' : '0' );
+		body.append( 'email_to', emailTo ? emailTo.value : '' );
+		body.append( 'telegram_on', ( tgOn && tgOn.checked ) ? '1' : '0' );
+		body.append( 'telegram_token', tgToken ? tgToken.value : '' );
+		body.append( 'telegram_chat', tgChat ? tgChat.value : '' );
+		return body;
+	}
+
+	if ( notifySave ) {
+		notifySave.addEventListener( 'click', function () {
+			if ( notifyMsg ) {
+				notifyMsg.textContent = '';
+			}
+			fetch( cfg.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: notifyBody( 'rdbk_save_notify', notifySave.getAttribute( 'data-nonce' ) ) } ).then( function ( r ) {
+				return r.json();
+			} ).then( function ( res ) {
+				if ( notifyMsg ) {
+					notifyMsg.textContent = ( res && res.success ) ? ( i18n.saved || 'Saved.' ) : ( i18n.failed || 'Failed.' );
+				}
+				// The token is stored server-side now; clear the field (renders blank).
+				var tgToken = document.getElementById( 'rdbk-notify-tg-token' );
+				if ( res && res.success && tgToken ) {
+					tgToken.value = '';
+				}
+			} ).catch( function () {
+				if ( notifyMsg ) {
+					notifyMsg.textContent = i18n.failed || 'Failed.';
+				}
+			} );
+		} );
+	}
+
+	if ( notifyTest ) {
+		notifyTest.addEventListener( 'click', function () {
+			if ( notifyMsg ) {
+				notifyMsg.textContent = i18n.testing || 'Sending…';
+			}
+			fetch( cfg.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: notifyBody( 'rdbk_test_notify', notifyTest.getAttribute( 'data-nonce' ) ) } ).then( function ( r ) {
+				return r.json();
+			} ).then( function ( res ) {
+				if ( ! notifyMsg ) {
+					return;
+				}
+				if ( res && res.success ) {
+					notifyMsg.textContent = ( res.data && res.data.ok ) ? ( i18n.testOk || 'Test sent.' ) : ( i18n.testFail || 'Test failed for a channel — check the settings.' );
+				} else {
+					notifyMsg.textContent = ( res && res.data && res.data.message ) || ( i18n.failed || 'Failed.' );
+				}
+			} ).catch( function () {
+				if ( notifyMsg ) {
+					notifyMsg.textContent = i18n.failed || 'Failed.';
+				}
+			} );
+		} );
 	}
 
 	if ( betaSwitch ) {

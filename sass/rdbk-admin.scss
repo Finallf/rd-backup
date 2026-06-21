@@ -67,6 +67,58 @@ $rdbk-bg-strip:       #f6f7f7; // gray strips / placeholder bg
 	grid-template-columns: 1fr;
 }
 
+// Restore preview: the backup summary card and the restore-apply (or
+// integrity-blocked) card sit side by side. Tops aligned; stacks to one
+// column on narrow screens.
+.rdbk-pgrid--preview {
+	grid-template-columns: 1fr 1fr;
+	align-items: start;
+
+	@media (max-width: 960px) {
+		grid-template-columns: 1fr;
+	}
+}
+
+// Retention "keep last N" row (Backup store card): label + select + saved msg.
+.rdbk-retention-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 4px;
+
+	label {
+		font-weight: 600;
+	}
+}
+
+// Schedule row (Schedule tab): frequency + time + save, wraps on narrow widths.
+.rdbk-schedule-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 12px;
+
+	label {
+		font-weight: 600;
+	}
+}
+
+// Notification settings rows (Schedule tab): label + field(s), wrap on narrow.
+.rdbk-notify-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 10px;
+
+	// The channel toggles carry their own checkbox + text, so only style the
+	// standalone field labels (Notify on / Bot token / Chat ID) as bold.
+	> label[for] {
+		font-weight: 600;
+	}
+}
+
 // ── Section header (dashicon + title) ────────────────────────────────────────
 .rdbk-section-header {
 	display: flex;

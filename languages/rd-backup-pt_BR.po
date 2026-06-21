@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ReloadeD Backup 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rd-backup\n"
-"POT-Creation-Date: 2026-06-20T23:39:15-03:00\n"
-"PO-Revision-Date: 2026-06-20 23:41-0300\n"
+"POT-Creation-Date: 2026-06-21T15:35:03-03:00\n"
+"PO-Revision-Date: 2026-06-21 15:42-0300\n"
 "Last-Translator: Regis Vieira Delgado (Finallf) <finallf2@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -16,8 +16,8 @@ msgstr ""
 "X-Domain: rd-backup\n"
 
 #. Plugin Name of the plugin
-#: rd-backup.php inc/class-rdbk-admin.php:41 inc/class-rdbk-admin.php:42
-#: inc/class-rdbk-admin.php:140 inc/class-rdbk-admin.php:146
+#: rd-backup.php inc/class-rdbk-admin.php:42 inc/class-rdbk-admin.php:43
+#: inc/class-rdbk-admin.php:146 inc/class-rdbk-admin.php:152
 msgid "ReloadeD Backup"
 msgstr "ReloadeD Backup"
 
@@ -48,83 +48,83 @@ msgstr "Regis Vieira Delgado"
 msgid "https://reloaded.com.br"
 msgstr "https://reloaded.com.br"
 
-#: inc/class-rdbk-admin.php:77
+#: inc/class-rdbk-admin.php:78
 msgid "Starting…"
 msgstr "Iniciando…"
 
-#: inc/class-rdbk-admin.php:78
+#: inc/class-rdbk-admin.php:79
 msgid "Working…"
 msgstr "Processando…"
 
-#: inc/class-rdbk-admin.php:79
+#: inc/class-rdbk-admin.php:80
 msgid "Done!"
 msgstr "Concluído!"
 
-#: inc/class-rdbk-admin.php:80
+#: inc/class-rdbk-admin.php:81
 msgid "Cancelled."
 msgstr "Cancelado."
 
-#: inc/class-rdbk-admin.php:81
+#: inc/class-rdbk-admin.php:82
 msgid "Failed. Check the logs."
 msgstr "Falhou. Verifique os logs."
 
-#: inc/class-rdbk-admin.php:82 inc/class-rdbk-admin.php:261
+#: inc/class-rdbk-admin.php:83 inc/class-rdbk-admin.php:290
 msgid "No archives yet."
 msgstr "Nenhum arquivo ainda."
 
-#: inc/class-rdbk-admin.php:83 inc/class-rdbk-admin.php:271
+#: inc/class-rdbk-admin.php:84 inc/class-rdbk-admin.php:300
 msgid "Download"
 msgstr "Download"
 
-#: inc/class-rdbk-admin.php:84 inc/class-rdbk-admin.php:273
+#: inc/class-rdbk-admin.php:85 inc/class-rdbk-admin.php:302
 msgid "Delete"
 msgstr "Excluir"
 
-#: inc/class-rdbk-admin.php:85
+#: inc/class-rdbk-admin.php:86
 msgid "Delete this file?"
 msgstr "Excluir este arquivo?"
 
-#: inc/class-rdbk-admin.php:86
+#: inc/class-rdbk-admin.php:87
 msgid "Backup created:"
 msgstr "Backup criado:"
 
-#: inc/class-rdbk-admin.php:87
+#: inc/class-rdbk-admin.php:88
 msgid "Reading archive…"
 msgstr "Lendo o arquivo…"
 
-#: inc/class-rdbk-admin.php:88
+#: inc/class-rdbk-admin.php:89
 msgid "Origin"
 msgstr "Origem"
 
-#: inc/class-rdbk-admin.php:89
+#: inc/class-rdbk-admin.php:90
 msgid "Created"
 msgstr "Criado em"
 
-#: inc/class-rdbk-admin.php:90
+#: inc/class-rdbk-admin.php:91
 msgid "Contents"
 msgstr "Conteúdo"
 
-#: inc/class-rdbk-admin.php:91
+#: inc/class-rdbk-admin.php:92
 msgid "Integrity"
 msgstr "Integridade"
 
-#: inc/class-rdbk-admin.php:92
+#: inc/class-rdbk-admin.php:93
 msgid "verified"
 msgstr "verificada"
 
-#: inc/class-rdbk-admin.php:93
+#: inc/class-rdbk-admin.php:94
 msgid "FAILED — archive may be corrupt"
 msgstr "FALHOU — o arquivo pode estar corrompido"
 
-#: inc/class-rdbk-admin.php:94
+#: inc/class-rdbk-admin.php:95
 msgid "no hash in manifest"
 msgstr "sem hash no manifesto"
 
-#: inc/class-rdbk-admin.php:95
+#: inc/class-rdbk-admin.php:96
 msgid "Restore blocked"
 msgstr "Restauração bloqueada"
 
-#: inc/class-rdbk-admin.php:96
+#: inc/class-rdbk-admin.php:97
 msgid ""
 "This archive failed its integrity check (corrupt or tampered database) and "
 "cannot be restored."
@@ -132,45 +132,42 @@ msgstr ""
 "Este arquivo falhou na verificação de integridade (banco de dados corrompido "
 "ou adulterado) e não pode ser restaurado."
 
-#: inc/class-rdbk-admin.php:97
+#: inc/class-rdbk-admin.php:98
 msgid "Warnings"
 msgstr "Avisos"
 
-#: inc/class-rdbk-admin.php:98
+#: inc/class-rdbk-admin.php:99
 msgid "No compatibility warnings."
 msgstr "Nenhum aviso de compatibilidade."
 
-#: inc/class-rdbk-admin.php:99
+#: inc/class-rdbk-admin.php:100
 msgid "Heads up:"
 msgstr "Atenção:"
 
-#: inc/class-rdbk-admin.php:100
+#: inc/class-rdbk-admin.php:101
 msgid ""
-"This overwrites the current database. A full safety backup is taken first. "
-"You will be signed out when it finishes (the restore replaces the users "
-"table) — just log back in."
+"This overwrites the current database. A full safety backup is taken first."
 msgstr ""
 "Isto sobrescreve o banco de dados atual. Um backup de segurança completo é "
-"feito antes. Você será desconectado quando terminar (a restauração substitui "
-"a tabela de usuários) — basta fazer login novamente."
+"feito antes."
 
-#: inc/class-rdbk-admin.php:101
+#: inc/class-rdbk-admin.php:102
 msgid "Type RESTORE to confirm:"
 msgstr "Digite RESTORE para confirmar:"
 
-#: inc/class-rdbk-admin.php:102
+#: inc/class-rdbk-admin.php:103
 msgid "Restore this backup"
 msgstr "Restaurar este backup"
 
-#: inc/class-rdbk-admin.php:103
+#: inc/class-rdbk-admin.php:104
 msgid "Creating safety backup…"
 msgstr "Criando backup de segurança…"
 
-#: inc/class-rdbk-admin.php:104
+#: inc/class-rdbk-admin.php:105
 msgid "Restoring…"
 msgstr "Restaurando…"
 
-#: inc/class-rdbk-admin.php:105
+#: inc/class-rdbk-admin.php:106
 msgid ""
 "Restore complete. You may need to log in again — reload the page to see the "
 "restored site."
@@ -178,64 +175,84 @@ msgstr ""
 "Restauração concluída. Pode ser necessário fazer login novamente — "
 "recarregue a página para ver o site restaurado."
 
-#: inc/class-rdbk-admin.php:106
+#: inc/class-rdbk-admin.php:107
 msgid "Clear the current job state? This does not touch your backups."
 msgstr "Limpar o estado da tarefa atual? Isso não afeta os seus backups."
 
-#: inc/class-rdbk-admin.php:107
+#: inc/class-rdbk-admin.php:108
 msgid "Job state cleared."
 msgstr "Estado da tarefa limpo."
 
-#: inc/class-rdbk-admin.php:108
+#: inc/class-rdbk-admin.php:109
 msgid "Choose a .zip first."
 msgstr "Escolha um .zip primeiro."
 
-#: inc/class-rdbk-admin.php:109
+#: inc/class-rdbk-admin.php:110
 msgid "Only .zip backups can be uploaded."
 msgstr "Apenas backups .zip podem ser enviados."
 
-#: inc/class-rdbk-admin.php:110 inc/class-rdbk-admin.php:302
+#: inc/class-rdbk-admin.php:111 inc/class-rdbk-admin.php:331
 msgid "No file chosen"
 msgstr "Nenhum arquivo escolhido"
 
-#: inc/class-rdbk-admin.php:111
+#: inc/class-rdbk-admin.php:112
 msgid "Uploading…"
 msgstr "Enviando…"
 
-#: inc/class-rdbk-admin.php:112
+#: inc/class-rdbk-admin.php:113
 msgid "Uploaded — refreshing…"
 msgstr "Enviado — atualizando…"
 
-#: inc/class-rdbk-admin.php:113 inc/class-rdbk-admin.php:496
+#: inc/class-rdbk-admin.php:114 inc/class-rdbk-admin.php:650
 msgid "Update now"
 msgstr "Atualizar agora"
 
-#: inc/class-rdbk-admin.php:114 inc/class-rdbk-admin.php:502
+#: inc/class-rdbk-admin.php:115 inc/class-rdbk-admin.php:656
 msgid "View release on GitHub"
 msgstr "Ver versão no GitHub"
 
-#: inc/class-rdbk-admin.php:115
+#: inc/class-rdbk-admin.php:116
 msgid "just now"
 msgstr "agora mesmo"
 
-#: inc/class-rdbk-admin.php:129 inc/class-rdbk-admin.php:191
-#: inc/class-rdbk-admin.php:322
+#: inc/class-rdbk-admin.php:117
+msgid "Saved."
+msgstr "Salvo."
+
+#: inc/class-rdbk-admin.php:118
+msgid "Sending…"
+msgstr "Enviando…"
+
+#: inc/class-rdbk-admin.php:119
+msgid "Test sent."
+msgstr "Teste enviado."
+
+#: inc/class-rdbk-admin.php:120
+msgid "Test failed for a channel — check the settings."
+msgstr "O teste falhou em algum canal — verifique as configurações."
+
+#: inc/class-rdbk-admin.php:134 inc/class-rdbk-admin.php:200
+#: inc/class-rdbk-admin.php:351
 msgid "Backup"
 msgstr "Backup"
 
-#: inc/class-rdbk-admin.php:130 inc/class-rdbk-admin.php:284
+#: inc/class-rdbk-admin.php:135 inc/class-rdbk-admin.php:313
 msgid "Restore"
 msgstr "Restauração"
 
-#: inc/class-rdbk-admin.php:131
+#: inc/class-rdbk-admin.php:136 inc/class-rdbk-admin.php:425
+msgid "Schedule"
+msgstr "Agendamento"
+
+#: inc/class-rdbk-admin.php:137
 msgid "Health"
 msgstr "Saúde"
 
-#: inc/class-rdbk-admin.php:196
+#: inc/class-rdbk-admin.php:205
 msgid "Create a backup"
 msgstr "Criar um backup"
 
-#: inc/class-rdbk-admin.php:198
+#: inc/class-rdbk-admin.php:207
 msgid ""
 "Builds a complete .zip — the full database dump plus the uploads folder — "
 "and saves it to the store below."
@@ -243,16 +260,16 @@ msgstr ""
 "Cria um .zip completo — o dump completo do banco de dados mais a pasta de "
 "uploads — e o salva no armazenamento abaixo."
 
-#: inc/class-rdbk-admin.php:201
+#: inc/class-rdbk-admin.php:210
 msgid "Create backup"
 msgstr "Criar backup"
 
-#: inc/class-rdbk-admin.php:213 inc/class-rdbk-healthcheck.php:64
+#: inc/class-rdbk-admin.php:222 inc/class-rdbk-healthcheck.php:64
 msgid "Backup store"
 msgstr "Armazenamento de backups"
 
 #. translators: %s: absolute path to the store directory
-#: inc/class-rdbk-admin.php:218
+#: inc/class-rdbk-admin.php:227
 #, php-format
 msgid ""
 "Backups are stored in %s — outside the plugin and outside uploads. Files "
@@ -263,21 +280,35 @@ msgstr ""
 "uploads. Os arquivos recebem um token aleatório e só podem ser baixados por "
 "um manipulador autenticado, nunca por uma URL direta."
 
-#: inc/class-rdbk-admin.php:227
+#: inc/class-rdbk-admin.php:234
+msgid "Backups to keep:"
+msgstr "Backups a manter:"
+
+#: inc/class-rdbk-admin.php:250
+msgid ""
+"After each new backup, only the most recent backups (up to this limit) are "
+"kept — older ones are deleted automatically. Safety snapshots are kept "
+"separately."
+msgstr ""
+"Após cada novo backup, apenas os mais recentes (até este limite) são "
+"mantidos — os mais antigos são excluídos automaticamente. Os snapshots de "
+"segurança são mantidos à parte."
+
+#: inc/class-rdbk-admin.php:256
 msgid "File"
 msgstr "Arquivo"
 
-#: inc/class-rdbk-admin.php:228 inc/class-rdbk-admin.php:323
-#: inc/class-rdbk-admin.php:355
+#: inc/class-rdbk-admin.php:257 inc/class-rdbk-admin.php:352
+#: inc/class-rdbk-admin.php:384
 msgid "Size"
 msgstr "Tamanho"
 
-#: inc/class-rdbk-admin.php:229 inc/class-rdbk-admin.php:324
-#: inc/class-rdbk-admin.php:356
+#: inc/class-rdbk-admin.php:258 inc/class-rdbk-admin.php:353
+#: inc/class-rdbk-admin.php:385
 msgid "Date"
 msgstr "Data"
 
-#: inc/class-rdbk-admin.php:240
+#: inc/class-rdbk-admin.php:269
 msgid ""
 "Optional — for nginx (including nginx-in-front setups like HestiaCP, where "
 "the .htaccess can be bypassed), add this server-level deny rule for defense "
@@ -287,15 +318,15 @@ msgstr ""
 "HestiaCP, onde o .htaccess pode ser ignorado), adicione esta regra de "
 "bloqueio em nível de servidor para defesa em profundidade:"
 
-#: inc/class-rdbk-admin.php:247
+#: inc/class-rdbk-admin.php:276
 msgid "Maintenance"
 msgstr "Manutenção"
 
-#: inc/class-rdbk-admin.php:249
+#: inc/class-rdbk-admin.php:278
 msgid "Reset job state"
 msgstr "Redefinir estado da tarefa"
 
-#: inc/class-rdbk-admin.php:252
+#: inc/class-rdbk-admin.php:281
 msgid ""
 "Clears a stuck backup or restore job if one was interrupted. Your backups "
 "are not touched."
@@ -303,12 +334,12 @@ msgstr ""
 "Limpa uma tarefa de backup ou restauração travada, caso tenha sido "
 "interrompida. Os seus backups não são afetados."
 
-#: inc/class-rdbk-admin.php:289
+#: inc/class-rdbk-admin.php:318
 msgid "Upload a backup"
 msgstr "Enviar um backup"
 
 #. translators: %s: maximum upload size, e.g. 256 MB
-#: inc/class-rdbk-admin.php:294
+#: inc/class-rdbk-admin.php:323
 #, php-format
 msgid ""
 "Upload a ReloadeD Backup .zip from another site (up to %s here). For larger "
@@ -317,19 +348,19 @@ msgstr ""
 "Envie um .zip do ReloadeD Backup de outro site (até %s aqui). Para arquivos "
 "maiores, coloque o arquivo no armazenamento via SFTP."
 
-#: inc/class-rdbk-admin.php:301
+#: inc/class-rdbk-admin.php:330
 msgid "Choose .zip"
 msgstr "Escolher .zip"
 
-#: inc/class-rdbk-admin.php:303
+#: inc/class-rdbk-admin.php:332
 msgid "Upload"
 msgstr "Enviar"
 
-#: inc/class-rdbk-admin.php:315
+#: inc/class-rdbk-admin.php:344
 msgid "Restore from a backup"
 msgstr "Restaurar a partir de um backup"
 
-#: inc/class-rdbk-admin.php:317
+#: inc/class-rdbk-admin.php:346
 msgid ""
 "Select a backup to inspect it. This is read-only: it validates the archive "
 "and previews what a restore would do — nothing is changed. To restore a "
@@ -341,7 +372,7 @@ msgstr ""
 "restaurar um backup de outro site, coloque o .zip dele no armazenamento via "
 "SFTP e ele aparecerá aqui."
 
-#: inc/class-rdbk-admin.php:330
+#: inc/class-rdbk-admin.php:359
 msgid ""
 "No backups in the store yet — create one in the Backup tab, or drop a .zip "
 "via SFTP."
@@ -349,15 +380,15 @@ msgstr ""
 "Ainda não há backups no armazenamento — crie um na aba Backup ou coloque "
 "um .zip via SFTP."
 
-#: inc/class-rdbk-admin.php:337 inc/class-rdbk-admin.php:366
+#: inc/class-rdbk-admin.php:366 inc/class-rdbk-admin.php:395
 msgid "Preview"
 msgstr "Pré-visualizar"
 
-#: inc/class-rdbk-admin.php:347
+#: inc/class-rdbk-admin.php:376
 msgid "Safety snapshots"
 msgstr "Snapshots de segurança"
 
-#: inc/class-rdbk-admin.php:349
+#: inc/class-rdbk-admin.php:378
 msgid ""
 "Full backups taken automatically right before each restore (the last 2 are "
 "kept). Restore one to undo your last restore."
@@ -365,90 +396,236 @@ msgstr ""
 "Backups completos feitos automaticamente logo antes de cada restauração (os "
 "2 últimos são mantidos). Restaure um para desfazer a sua última restauração."
 
-#: inc/class-rdbk-admin.php:354
+#: inc/class-rdbk-admin.php:383
 msgid "Snapshot"
 msgstr "Snapshot"
 
-#: inc/class-rdbk-admin.php:384
+#: inc/class-rdbk-admin.php:417
+msgid "Off"
+msgstr "Off"
+
+#: inc/class-rdbk-admin.php:418
+msgid "Daily"
+msgstr "Diário"
+
+#: inc/class-rdbk-admin.php:419
+msgid "Weekly"
+msgstr "Semanal"
+
+#: inc/class-rdbk-admin.php:420
+msgid "Monthly"
+msgstr "Mensal"
+
+#: inc/class-rdbk-admin.php:430
+msgid "Automatic backups"
+msgstr "Backups automáticos"
+
+#: inc/class-rdbk-admin.php:432
+msgid ""
+"Run a full backup automatically on a schedule. Automatic backups follow the "
+"same \"keep last N\" retention as manual ones (set in the Backup tab) and do "
+"not take a safety snapshot."
+msgstr ""
+"Roda um backup completo automaticamente, de forma agendada. Os backups "
+"automáticos seguem a mesma retenção \"manter os últimos N\" dos backups "
+"manuais (definida na aba Backup) e não criam um snapshot de segurança."
+
+#: inc/class-rdbk-admin.php:436
+msgid "Frequency:"
+msgstr "Frequência:"
+
+#: inc/class-rdbk-admin.php:449
+msgid "at"
+msgstr "às"
+
+#: inc/class-rdbk-admin.php:451
+msgid "Save schedule"
+msgstr "Salvar agendamento"
+
+#: inc/class-rdbk-admin.php:456
+msgid "Next backup:"
+msgstr "Próximo backup:"
+
+#: inc/class-rdbk-admin.php:457 inc/class-rdbk-admin.php:471
+msgid "—"
+msgstr "—"
+
+#: inc/class-rdbk-admin.php:460
+msgid "Last automatic backup:"
+msgstr "Último backup automático:"
+
+#: inc/class-rdbk-admin.php:467
+msgid "OK"
+msgstr "OK"
+
+#: inc/class-rdbk-admin.php:467
+msgid "Failed"
+msgstr "Falhou"
+
+#: inc/class-rdbk-admin.php:477
+msgid ""
+"WordPress runs scheduled tasks when the site gets traffic, so on a quiet "
+"site a backup may run a little after the chosen time. For exact timing, "
+"point a real system cron at wp-cron.php."
+msgstr ""
+"O WordPress executa tarefas agendadas quando o site recebe tráfego, então em "
+"um site com pouco movimento o backup pode rodar um pouco depois do horário "
+"escolhido. Para horário exato, aponte um cron real do sistema para o wp-"
+"cron.php."
+
+#: inc/class-rdbk-admin.php:492
+msgid "Notifications"
+msgstr "Notificações"
+
+#: inc/class-rdbk-admin.php:494
+msgid ""
+"Get notified when an automatic backup finishes. Manual backups are not "
+"notified — you see their result on screen."
+msgstr ""
+"Seja notificado quando um backup automático terminar. Backups manuais não "
+"geram notificação — você vê o resultado na tela."
+
+#: inc/class-rdbk-admin.php:498
+msgid "Notify on:"
+msgstr "Notificar em:"
+
+#: inc/class-rdbk-admin.php:500
+msgid "Failures only"
+msgstr "Apenas falhas"
+
+#: inc/class-rdbk-admin.php:501
+msgid "Success and failures"
+msgstr "Sucessos e falhas"
+
+#: inc/class-rdbk-admin.php:506
+msgid "Email"
+msgstr "E-mail"
+
+#: inc/class-rdbk-admin.php:511
+msgid "Telegram"
+msgstr "Telegram"
+
+#: inc/class-rdbk-admin.php:514
+msgid "Bot token:"
+msgstr "Token do bot:"
+
+#: inc/class-rdbk-admin.php:515
+msgid "•••••• (leave blank to keep)"
+msgstr "•••••• (deixe em branco para manter)"
+
+#: inc/class-rdbk-admin.php:516
+msgid "Chat ID:"
+msgstr "ID do chat:"
+
+#: inc/class-rdbk-admin.php:521
+msgid "Save notifications"
+msgstr "Salvar notificações"
+
+#: inc/class-rdbk-admin.php:522
+msgid "Send test"
+msgstr "Enviar teste"
+
+#: inc/class-rdbk-admin.php:526
+msgid ""
+"Telegram: create a bot with @BotFather, then paste its token and your chat/"
+"channel ID. Save before sending a test — the token is stored privately and "
+"never shown again."
+msgstr ""
+"Telegram: crie um bot com o @BotFather, depois cole o token dele e o ID do "
+"seu chat/canal. Salve antes de enviar um teste — o token é guardado de forma "
+"privada e nunca mais é exibido."
+
+#: inc/class-rdbk-admin.php:538
 msgid "Updates"
 msgstr "Atualizações"
 
-#: inc/class-rdbk-admin.php:395
+#: inc/class-rdbk-admin.php:549
 msgid "Environment"
 msgstr "Ambiente"
 
-#: inc/class-rdbk-admin.php:400
+#: inc/class-rdbk-admin.php:554
 msgid "Preflight checks"
 msgstr "Verificações preliminares"
 
-#: inc/class-rdbk-admin.php:404
+#: inc/class-rdbk-admin.php:558
 msgid "Check"
 msgstr "Verificação"
 
-#: inc/class-rdbk-admin.php:405
+#: inc/class-rdbk-admin.php:559
 msgid "Result"
 msgstr "Resultado"
 
-#: inc/class-rdbk-admin.php:406
+#: inc/class-rdbk-admin.php:560
 msgid "Notes"
 msgstr "Observações"
 
-#: inc/class-rdbk-admin.php:446
+#: inc/class-rdbk-admin.php:600
 msgid "Never checked"
 msgstr "Nunca verificado"
 
-#: inc/class-rdbk-admin.php:447
+#: inc/class-rdbk-admin.php:601
 msgid "never"
 msgstr "nunca"
 
-#: inc/class-rdbk-admin.php:450 inc/class-rdbk-updater.php:402
+#: inc/class-rdbk-admin.php:604 inc/class-rdbk-updater.php:477
 msgid "Update available"
 msgstr "Atualização disponível"
 
-#: inc/class-rdbk-admin.php:450 inc/class-rdbk-updater.php:402
+#: inc/class-rdbk-admin.php:604 inc/class-rdbk-updater.php:477
 msgid "Up to date"
 msgstr "Atualizado"
 
 #. translators: %s: human-readable time-ago, e.g. "2 hours"
-#: inc/class-rdbk-admin.php:453
+#: inc/class-rdbk-admin.php:607
 #, php-format
 msgid "%s ago"
 msgstr "há %s"
 
-#: inc/class-rdbk-admin.php:454 inc/class-rdbk-healthcheck.php:43
+#: inc/class-rdbk-admin.php:608 inc/class-rdbk-healthcheck.php:43
 #: inc/class-rdbk-healthcheck.php:56
 msgid "unknown"
 msgstr "desconhecido"
 
-#: inc/class-rdbk-admin.php:461 inc/class-rdbk-admin.php:465
+#: inc/class-rdbk-admin.php:615 inc/class-rdbk-admin.php:619
 msgid "Beta channel"
 msgstr "Canal beta"
 
-#: inc/class-rdbk-admin.php:470
+#: inc/class-rdbk-admin.php:624
 msgid "Check for updates"
 msgstr "Verificar atualizações"
 
-#: inc/class-rdbk-admin.php:473
+#: inc/class-rdbk-admin.php:627
 msgid "Release status"
 msgstr "Status da versão"
 
-#: inc/class-rdbk-admin.php:477
+#: inc/class-rdbk-admin.php:631
 msgid "Current version"
 msgstr "Versão atual"
 
-#: inc/class-rdbk-admin.php:480
+#: inc/class-rdbk-admin.php:634
 msgid "Latest version"
 msgstr "Versão mais recente"
 
-#: inc/class-rdbk-admin.php:484
+#: inc/class-rdbk-admin.php:638
 msgid "BETA"
 msgstr "BETA"
 
-#: inc/class-rdbk-admin.php:487
+#: inc/class-rdbk-admin.php:641
 msgid "Last check"
 msgstr "Última verificação"
 
-#: inc/class-rdbk-backup.php:132
+#: inc/class-rdbk-admin.php:672 inc/class-rdbk-notifier.php:195
+#: inc/class-rdbk-notifier.php:231 inc/class-rdbk-runner.php:50
+#: inc/class-rdbk-scheduler.php:257 inc/class-rdbk-updater.php:449
+#: inc/class-rdbk-updater.php:490
+msgid "Permission denied."
+msgstr "Permissão negada."
+
+#: inc/class-rdbk-admin.php:679
+msgid "Invalid value."
+msgstr "Valor inválido."
+
+#: inc/class-rdbk-backup.php:133
 msgid ""
 "Backup verification failed — the archive was corrupt and has been removed. "
 "Please try again."
@@ -565,7 +742,47 @@ msgstr ""
 "No nginx, opcionalmente adicione uma regra de bloqueio em nível de servidor "
 "(você controla a configuração) para defesa em profundidade."
 
-#: inc/class-rdbk-restore.php:44 inc/class-rdbk-storage.php:298
+#. translators: %s: site name/host.
+#: inc/class-rdbk-notifier.php:121 inc/class-rdbk-notifier.php:239
+#, php-format
+msgid "ReloadeD Backup — %s"
+msgstr "ReloadeD Backup — %s"
+
+#. translators: %s: site name/host.
+#: inc/class-rdbk-notifier.php:125
+#, php-format
+msgid "[%s] Automatic backup FAILED"
+msgstr "[%s] Backup automático FALHOU"
+
+#: inc/class-rdbk-notifier.php:128
+msgid "Automatic backup FAILED"
+msgstr "Backup automático FALHOU"
+
+#. translators: %s: site name/host.
+#: inc/class-rdbk-notifier.php:136
+#, php-format
+msgid "[%s] Automatic backup OK"
+msgstr "[%s] Backup automático OK"
+
+#: inc/class-rdbk-notifier.php:139
+msgid "Automatic backup completed"
+msgstr "Backup automático concluído"
+
+#. translators: %s: site name/host.
+#: inc/class-rdbk-notifier.php:237
+#, php-format
+msgid "[%s] Test notification"
+msgstr "[%s] Notificação de teste"
+
+#: inc/class-rdbk-notifier.php:240
+msgid "Test notification — your settings work."
+msgstr "Notificação de teste — suas configurações estão funcionando."
+
+#: inc/class-rdbk-notifier.php:251
+msgid "Enable a channel and save before testing."
+msgstr "Ative um canal e salve antes de testar."
+
+#: inc/class-rdbk-restore.php:44 inc/class-rdbk-storage.php:330
 msgid "Backup file not found."
 msgstr "Arquivo de backup não encontrado."
 
@@ -628,11 +845,6 @@ msgstr ""
 "Um drop-in de cache de objetos persistente (ex.: Redis) está ativo aqui — se "
 "o destino restaurado não tiver Redis, pode ser necessário removê-lo."
 
-#: inc/class-rdbk-runner.php:50 inc/class-rdbk-updater.php:374
-#: inc/class-rdbk-updater.php:415
-msgid "Permission denied."
-msgstr "Permissão negada."
-
 #: inc/class-rdbk-runner.php:76
 msgid "Unknown job type."
 msgstr "Tipo de tarefa desconhecido."
@@ -675,14 +887,48 @@ msgstr "O envio falhou — nenhum arquivo recebido."
 msgid "Only valid .zip backups can be uploaded."
 msgstr "Apenas backups .zip válidos podem ser enviados."
 
-#: inc/class-rdbk-storage.php:288
+#: inc/class-rdbk-storage.php:320
 msgid "You do not have permission to download backups."
 msgstr "Você não tem permissão para baixar backups."
 
-#: inc/class-rdbk-updater.php:366
+#: inc/class-rdbk-updater.php:414
 msgid "Failed to rename the plugin directory during update."
 msgstr "Falha ao renomear o diretório do plugin durante a atualização."
 
-#: inc/class-rdbk-updater.php:390
-msgid "Could not reach GitHub. Try again later."
-msgstr "Não foi possível conectar ao GitHub. Tente novamente mais tarde."
+#: inc/class-rdbk-updater.php:427
+msgid "No release found for this channel yet."
+msgstr "Nenhuma versão encontrada para este canal ainda."
+
+#: inc/class-rdbk-updater.php:429
+msgid "A release was found, but it has no installable .zip asset yet."
+msgstr ""
+"Uma versão foi encontrada, mas ainda não há um arquivo .zip instalável."
+
+#: inc/class-rdbk-updater.php:431
+msgid ""
+"The GitHub API rate limit was reached. Wait a few minutes and try again."
+msgstr ""
+"O limite de requisições da API do GitHub foi atingido. Aguarde alguns "
+"minutos e tente novamente."
+
+#. translators: %d: HTTP status code GitHub returned.
+#: inc/class-rdbk-updater.php:435
+#, php-format
+msgid "GitHub returned an unexpected response (HTTP %d). Try again later."
+msgstr ""
+"O GitHub retornou uma resposta inesperada (HTTP %d). Tente novamente mais "
+"tarde."
+
+#: inc/class-rdbk-updater.php:440
+msgid "Could not reach GitHub — check your connection and try again."
+msgstr ""
+"Não foi possível acessar o GitHub — verifique sua conexão e tente novamente."
+
+#~ msgid ""
+#~ "This overwrites the current database. A full safety backup is taken "
+#~ "first. You will be signed out when it finishes (the restore replaces the "
+#~ "users table) — just log back in."
+#~ msgstr ""
+#~ "Isto sobrescreve o banco de dados atual. Um backup de segurança completo "
+#~ "é feito antes. Você será desconectado quando terminar (a restauração "
+#~ "substitui a tabela de usuários) — basta fazer login novamente."

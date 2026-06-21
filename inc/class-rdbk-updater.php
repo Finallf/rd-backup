@@ -41,6 +41,22 @@ class RDBK_Updater {
 	 */
 	private static $instance = null;
 
+	/**
+	 * Why the last fetch_release() returned null — '' on success, otherwise one
+	 * of: 'network', 'no_release', 'no_asset', 'rate_limit', 'http'. Lets the
+	 * "Check for updates" handler tell a real outage apart from "no release yet".
+	 *
+	 * @var string
+	 */
+	private $last_error = '';
+
+	/**
+	 * The HTTP status behind a 'http' last_error (for the message); 0 otherwise.
+	 *
+	 * @var int
+	 */
+	private $last_error_code = 0;
+
 	public static function instance(): self {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
@@ -110,6 +126,9 @@ class RDBK_Updater {
 	public function fetch_release( bool $force = false ): ?array {
 		$channel = $this->channel();
 
+		$this->last_error      = '';
+		$this->last_error_code = 0;
+
 		if ( ! $force ) {
 			$cached = get_transient( self::TRANSIENT );
 			// Cache only counts for the CURRENT channel — switching invalidates the
@@ -132,8 +151,26 @@ class RDBK_Updater {
 			)
 		);
 
-		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+		if ( is_wp_error( $response ) ) {
+			$this->last_error = 'network';
 			// Short "empty" cache on error to avoid hammering GitHub during an outage.
+			set_transient( self::TRANSIENT, array(), HOUR_IN_SECONDS );
+			return null;
+		}
+
+		$code = (int) wp_remote_retrieve_response_code( $response );
+		if ( 200 !== $code ) {
+			// 404 = no release for this channel (stable with no stable yet, or a
+			// missing/renamed repo); 403/429 = the anonymous API rate limit; anything
+			// else is an unexpected GitHub-side error.
+			if ( 404 === $code ) {
+				$this->last_error = 'no_release';
+			} elseif ( 403 === $code || 429 === $code ) {
+				$this->last_error = 'rate_limit';
+			} else {
+				$this->last_error      = 'http';
+				$this->last_error_code = $code;
+			}
 			set_transient( self::TRANSIENT, array(), HOUR_IN_SECONDS );
 			return null;
 		}
@@ -156,6 +193,9 @@ class RDBK_Updater {
 			$data = $newest;
 		}
 		if ( ! is_array( $data ) || empty( $data['tag_name'] ) ) {
+			// 200 OK but no usable release (empty /releases list, or an unparseable
+			// body) — same meaning to the user as a 404: nothing to install.
+			$this->last_error = 'no_release';
 			return null;
 		}
 
@@ -169,6 +209,7 @@ class RDBK_Updater {
 			}
 		}
 		if ( '' === $zip_url ) {
+			$this->last_error = 'no_asset';
 			return null;
 		}
 
@@ -269,7 +310,12 @@ class RDBK_Updater {
 		foreach ( preg_split( '/\r\n|\r|\n/', $md ) as $raw ) {
 			$line = trim( (string) $raw );
 
-			if ( '' === $line ) {
+			// Skip blanks AND standalone separators (--- / *** / ___ / <br>) —
+			// semantic-release sprinkles these between version sections, but the
+			// headings already separate things, so they'd just be noise here.
+			if ( '' === $line
+				|| (bool) preg_match( '/^(?:-{3,}|\*{3,}|_{3,})$/', $line )
+				|| (bool) preg_match( '#^<br\s*/?>$#i', $line ) ) {
 				if ( $in_list ) {
 					$out    .= '</ul>';
 					$in_list = false;
@@ -322,6 +368,8 @@ class RDBK_Updater {
 	 */
 	private function inline_md( string $text ): string {
 		$text = esc_html( $text );
+		// An inline <br> (escaped to &lt;br&gt; above) → a real line break.
+		$text = (string) preg_replace( '#&lt;br\s*/?&gt;#i', '<br>', $text );
 		$text = preg_replace_callback(
 			'/\[([^\]]+)\]\(([^)\s]+)\)/',
 			static function ( $m ) {
@@ -367,6 +415,33 @@ class RDBK_Updater {
 	}
 
 	/**
+	 * Maps the last fetch_release() failure to a clear, user-facing message — so
+	 * "Check for updates" tells a real outage apart from "no release for this
+	 * channel yet", a rate limit, or a release with no installable asset.
+	 *
+	 * @return string
+	 */
+	private function error_message(): string {
+		switch ( $this->last_error ) {
+			case 'no_release':
+				return __( 'No release found for this channel yet.', 'rd-backup' );
+			case 'no_asset':
+				return __( 'A release was found, but it has no installable .zip asset yet.', 'rd-backup' );
+			case 'rate_limit':
+				return __( 'The GitHub API rate limit was reached. Wait a few minutes and try again.', 'rd-backup' );
+			case 'http':
+				return sprintf(
+					/* translators: %d: HTTP status code GitHub returned. */
+					__( 'GitHub returned an unexpected response (HTTP %d). Try again later.', 'rd-backup' ),
+					$this->last_error_code
+				);
+			case 'network':
+			default:
+				return __( 'Could not reach GitHub — check your connection and try again.', 'rd-backup' );
+		}
+	}
+
+	/**
 	 * AJAX "Check for updates": invalidate the cache, re-fetch, return the status.
 	 */
 	public function ajax_check(): void {
@@ -387,7 +462,7 @@ class RDBK_Updater {
 					'ok'        => false,
 					'current'   => $current,
 					'latest'    => '',
-					'status'    => __( 'Could not reach GitHub. Try again later.', 'rd-backup' ),
+					'status'    => $this->error_message(),
 					'hasUpdate' => false,
 				)
 			);

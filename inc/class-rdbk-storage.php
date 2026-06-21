@@ -23,6 +23,12 @@ class RDBK_Storage {
 	const DOWNLOAD_ACTION = 'rdbk_download';
 	const SAFETY_KEEP     = 2;
 
+	// User-backup retention (manual + scheduled), configurable in the Backup tab.
+	// Keep the last N; RETENTION_CHOICES gates the allowed values.
+	const RETENTION_OPTION  = 'rdbk_retention_keep';
+	const RETENTION_DEFAULT = 5;
+	const RETENTION_CHOICES = array( 3, 5, 7, 15 );
+
 	/**
 	 * Singleton instance.
 	 *
@@ -183,10 +189,36 @@ class RDBK_Storage {
 	 * Keeps only the $keep most recent safety snapshots; deletes the rest.
 	 */
 	public function prune_safety_snapshots( int $keep ): void {
-		$snaps = $this->list_archives( 'safety' );
-		foreach ( array_slice( $snaps, max( 0, $keep ) ) as $old ) {
+		$this->prune_kind( 'safety', $keep );
+	}
+
+	/**
+	 * Keeps only the $keep most recent archives of a kind ('user' / 'safety');
+	 * deletes the rest. The list is newest-first, so everything past N is dropped.
+	 */
+	public function prune_kind( string $kind, int $keep ): void {
+		$items = $this->list_archives( $kind );
+		foreach ( array_slice( $items, max( 0, $keep ) ) as $old ) {
 			$this->delete( (string) $old['name'] );
 		}
+	}
+
+	/**
+	 * The configured "keep last N" for user backups (manual + scheduled),
+	 * validated against the allowed choices. Falls back to the default.
+	 */
+	public function retention_keep(): int {
+		$n = (int) get_option( self::RETENTION_OPTION, self::RETENTION_DEFAULT );
+		return in_array( $n, self::RETENTION_CHOICES, true ) ? $n : self::RETENTION_DEFAULT;
+	}
+
+	/**
+	 * Enforces the user-backup retention: keeps the last N (manual + scheduled),
+	 * deletes older ones. Safety snapshots have their own retention (on restore)
+	 * and are not touched here. Called after a new backup is published.
+	 */
+	public function enforce_retention(): void {
+		$this->prune_kind( 'user', $this->retention_keep() );
 	}
 
 	/**

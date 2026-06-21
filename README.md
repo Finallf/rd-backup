@@ -122,7 +122,7 @@ Everything happens under **Tools → ReloadeD Backup**.
 <br>
 
 > [!WARNING]
-> A restore overwrites the current database. It replaces the users table, so **you will be signed out when it finishes** — just log back in. The safety snapshot is your net.
+> A restore overwrites the current database. The safety snapshot taken right before it is your net. Restoring onto the same domain keeps you logged in; restoring onto a different domain may sign you out — just log back in.
 
 <br>
 

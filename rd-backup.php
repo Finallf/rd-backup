@@ -3,7 +3,7 @@
  * Plugin Name: ReloadeD Backup
  * Plugin URI: https://github.com/Finallf/rd-backup
  * Description: Complete, portable WordPress backup & restore — a full database dump plus the uploads folder in a single .zip, restorable on any host. Pairs with the ReloadeD theme but runs standalone with any theme.
- * Version: 1.1.1
+ * Version: 1.2.0-beta.5
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * Author: Regis Vieira Delgado
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'RDBK_VERSION', '1.1.1' );
+define( 'RDBK_VERSION', '1.2.0-beta.5' );
 define( 'RDBK_PLUGIN_FILE', __FILE__ );
 define( 'RDBK_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'RDBK_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -39,6 +39,8 @@ require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-uploads-extract.php';
 require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-search-replace.php';
 require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-restore.php';
 require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-healthcheck.php';
+require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-scheduler.php';
+require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-notifier.php';
 require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-admin.php';
 require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-updater.php';
 require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-plugin.php';
@@ -46,6 +48,7 @@ require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-plugin.php';
 add_action( 'plugins_loaded', array( 'RDBK_Plugin', 'instance' ) );
 register_activation_hook( __FILE__, array( 'RDBK_Storage', 'on_activation' ) );
 register_deactivation_hook( __FILE__, array( 'RDBK_Storage', 'on_deactivation' ) );
+register_deactivation_hook( __FILE__, array( 'RDBK_Scheduler', 'on_deactivation' ) );
 
 /*
  * Load the plugin's translations from /languages. Hooked on init (not
@@ -77,4 +80,23 @@ function rdbk_get_last_backup(): ?array {
 	}
 	$archives = RDBK_Storage::instance()->list_archives( 'user' );
 	return $archives[0] ?? null;
+}
+
+/**
+ * Public API: the last automatic (scheduled) backup run, or null when none ran.
+ *
+ * Returns the scheduler's last-run record (keys: time = timestamp, status =
+ * 'done' | 'error', file = archive name, message = error text on failure) so a
+ * theme or plugin can surface a "last automatic backup OK/failed" indicator
+ * without reaching into internals. Guard the call with
+ * function_exists( 'rdbk_get_last_auto_backup' ) so it degrades gracefully on an
+ * older plugin build.
+ *
+ * @return array|null
+ */
+function rdbk_get_last_auto_backup(): ?array {
+	if ( ! class_exists( 'RDBK_Scheduler' ) ) {
+		return null;
+	}
+	return RDBK_Scheduler::instance()->last_run();
 }

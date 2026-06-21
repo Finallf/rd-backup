@@ -57,3 +57,7 @@ tmp/
 # === QA interno (plano de testes + scripts de integridade) ===
 # NUNCA versionar nem distribuir — uso local de validação do backup.
 qa/
+
+# === Backlog interno (diário de bordo local) ===
+# NUNCA versionar nem distribuir — planejamento/roadmap local do plugin.
+BACKLOG.md

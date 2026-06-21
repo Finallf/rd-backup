@@ -18,6 +18,25 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 delete_option( 'rdbk_update_beta_channel' );
 delete_transient( 'rdbk_update_release' );
 
+// Retention: the "keep last N" setting (mirrors RDBK_Storage::RETENTION_OPTION).
+delete_option( 'rdbk_retention_keep' );
+
+// Scheduler: frequency/time/last-run options + any armed cron events
+// (literals mirror RDBK_Scheduler's constants — its class isn't loaded here).
+delete_option( 'rdbk_schedule_freq' );
+delete_option( 'rdbk_schedule_time' );
+delete_option( 'rdbk_schedule_last' );
+wp_clear_scheduled_hook( 'rdbk_scheduled_run' );
+wp_clear_scheduled_hook( 'rdbk_scheduled_continue' );
+
+// Notifier: channel settings (literals mirror RDBK_Notifier's constants).
+delete_option( 'rdbk_notify_on' );
+delete_option( 'rdbk_notify_email' );
+delete_option( 'rdbk_notify_email_to' );
+delete_option( 'rdbk_notify_telegram' );
+delete_option( 'rdbk_notify_telegram_token' );
+delete_option( 'rdbk_notify_telegram_chat' );
+
 // Defensive: a pre-1.0 build kept the job state in an option before it moved to
 // a file (wp-content/rd-backup/.job.json). Drop any lingering row.
 delete_option( 'rdbk_job' );

@@ -34,6 +34,7 @@ class RDBK_Admin {
 	private function __construct() {
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
+		add_action( 'wp_ajax_rdbk_save_retention', array( $this, 'ajax_save_retention' ) );
 	}
 
 	public function register_menu(): void {
@@ -97,7 +98,7 @@ class RDBK_Admin {
 					'warningsLbl'      => __( 'Warnings', 'rd-backup' ),
 					'noWarnings'       => __( 'No compatibility warnings.', 'rd-backup' ),
 					'restoreWarnTitle' => __( 'Heads up:', 'rd-backup' ),
-					'restoreWarn'      => __( 'This overwrites the current database. A full safety backup is taken first. You will be signed out when it finishes (the restore replaces the users table) — just log back in.', 'rd-backup' ),
+					'restoreWarn'      => __( 'This overwrites the current database. A full safety backup is taken first.', 'rd-backup' ),
 					'typeRestore'      => __( 'Type RESTORE to confirm:', 'rd-backup' ),
 					'restoreBtn'       => __( 'Restore this backup', 'rd-backup' ),
 					'safetyBackup'     => __( 'Creating safety backup…', 'rd-backup' ),
@@ -113,6 +114,10 @@ class RDBK_Admin {
 					'updateNow'        => __( 'Update now', 'rd-backup' ),
 					'viewRelease'      => __( 'View release on GitHub', 'rd-backup' ),
 					'justNow'          => __( 'just now', 'rd-backup' ),
+					'saved'            => __( 'Saved.', 'rd-backup' ),
+					'testing'          => __( 'Sending…', 'rd-backup' ),
+					'testOk'           => __( 'Test sent.', 'rd-backup' ),
+					'testFail'         => __( 'Test failed for a channel — check the settings.', 'rd-backup' ),
 				),
 			)
 		);
@@ -126,9 +131,10 @@ class RDBK_Admin {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only tab switch in the admin UI, no form is processed.
 		$active = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'backup';
 		$tabs   = array(
-			'backup'  => __( 'Backup', 'rd-backup' ),
-			'restore' => __( 'Restore', 'rd-backup' ),
-			'health'  => __( 'Health', 'rd-backup' ),
+			'backup'   => __( 'Backup', 'rd-backup' ),
+			'restore'  => __( 'Restore', 'rd-backup' ),
+			'schedule' => __( 'Schedule', 'rd-backup' ),
+			'health'   => __( 'Health', 'rd-backup' ),
 		);
 		if ( ! isset( $tabs[ $active ] ) ) {
 			$active = 'backup';
@@ -175,6 +181,9 @@ class RDBK_Admin {
 			case 'restore':
 				$this->render_restore();
 				break;
+			case 'schedule':
+				$this->render_schedule();
+				break;
 			default:
 				$this->render_backup();
 				break;
@@ -219,6 +228,26 @@ class RDBK_Admin {
 							'<code>' . esc_html( RDBK_Storage::instance()->dir() ) . '</code>'
 						);
 						?>
+					</p>
+
+					<p class="rdbk-retention-row">
+						<label for="rdbk-retention"><?php esc_html_e( 'Backups to keep:', 'rd-backup' ); ?></label>
+						<select id="rdbk-retention" data-nonce="<?php echo esc_attr( wp_create_nonce( 'rdbk_save_retention' ) ); ?>">
+							<?php
+							$rdbk_keep = RDBK_Storage::instance()->retention_keep();
+							foreach ( RDBK_Storage::RETENTION_CHOICES as $rdbk_choice ) {
+								printf(
+									'<option value="%1$d"%2$s>%1$d</option>',
+									(int) $rdbk_choice,
+									selected( (int) $rdbk_choice, $rdbk_keep, false ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- selected() returns a fixed, safe attribute string.
+								);
+							}
+							?>
+						</select>
+						<span id="rdbk-retention-msg" class="rdbk-inline-msg" aria-live="polite"></span>
+					</p>
+					<p class="rdbk-card__hint">
+						<?php esc_html_e( 'After each new backup, only the most recent backups (up to this limit) are kept — older ones are deleted automatically. Safety snapshots are kept separately.', 'rd-backup' ); ?>
 					</p>
 
 					<table class="widefat striped rdbk-archives">
@@ -377,6 +406,131 @@ class RDBK_Admin {
 		<?php
 	}
 
+	private function render_schedule(): void {
+		$scheduler = RDBK_Scheduler::instance();
+		$freq      = $scheduler->freq();
+		$time      = $scheduler->time_of_day();
+		$next      = $scheduler->next_scheduled();
+		$last      = $scheduler->last_run();
+
+		$freq_labels = array(
+			'off'     => __( 'Off', 'rd-backup' ),
+			'daily'   => __( 'Daily', 'rd-backup' ),
+			'weekly'  => __( 'Weekly', 'rd-backup' ),
+			'monthly' => __( 'Monthly', 'rd-backup' ),
+		);
+		?>
+		<div class="rdbk-section-header">
+			<span class="dashicons dashicons-clock" aria-hidden="true"></span>
+			<h2><?php esc_html_e( 'Schedule', 'rd-backup' ); ?></h2>
+		</div>
+		<div class="rdbk-pdash">
+			<div class="rdbk-pgrid">
+				<div class="rdbk-card">
+					<h3 class="rdbk-card__title"><?php esc_html_e( 'Automatic backups', 'rd-backup' ); ?></h3>
+					<p class="rdbk-card__desc">
+						<?php esc_html_e( 'Run a full backup automatically on a schedule. Automatic backups follow the same "keep last N" retention as manual ones (set in the Backup tab) and do not take a safety snapshot.', 'rd-backup' ); ?>
+					</p>
+
+					<p class="rdbk-schedule-row">
+						<label for="rdbk-schedule-freq"><?php esc_html_e( 'Frequency:', 'rd-backup' ); ?></label>
+						<select id="rdbk-schedule-freq">
+							<?php
+							foreach ( $freq_labels as $value => $label ) {
+								printf(
+									'<option value="%1$s"%2$s>%3$s</option>',
+									esc_attr( $value ),
+									selected( $value, $freq, false ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- selected() returns a fixed, safe attribute string.
+									esc_html( $label )
+								);
+							}
+							?>
+						</select>
+						<label for="rdbk-schedule-time"><?php esc_html_e( 'at', 'rd-backup' ); ?></label>
+						<input type="time" id="rdbk-schedule-time" value="<?php echo esc_attr( $time ); ?>">
+						<button type="button" class="button button-primary" id="rdbk-schedule-save" data-nonce="<?php echo esc_attr( wp_create_nonce( 'rdbk_save_schedule' ) ); ?>"><?php esc_html_e( 'Save schedule', 'rd-backup' ); ?></button>
+						<span id="rdbk-schedule-msg" class="rdbk-inline-msg" aria-live="polite"></span>
+					</p>
+
+					<p>
+						<strong><?php esc_html_e( 'Next backup:', 'rd-backup' ); ?></strong>
+						<span id="rdbk-schedule-next"><?php echo $next ? esc_html( wp_date( 'Y-m-d H:i', $next ) ) : esc_html__( '—', 'rd-backup' ); ?></span>
+					</p>
+					<p>
+						<strong><?php esc_html_e( 'Last automatic backup:', 'rd-backup' ); ?></strong>
+						<?php
+						if ( is_array( $last ) ) {
+							$ok = 'done' === ( $last['status'] ?? '' );
+							printf(
+								'<span class="rdbk-badge rdbk-badge--%1$s">%2$s</span> %3$s',
+								esc_attr( $ok ? 'ok' : 'fail' ),
+								$ok ? esc_html__( 'OK', 'rd-backup' ) : esc_html__( 'Failed', 'rd-backup' ),
+								esc_html( wp_date( 'Y-m-d H:i', (int) $last['time'] ) )
+							);
+						} else {
+							echo esc_html__( '—', 'rd-backup' );
+						}
+						?>
+					</p>
+
+					<p class="rdbk-card__hint">
+						<?php esc_html_e( 'WordPress runs scheduled tasks when the site gets traffic, so on a quiet site a backup may run a little after the chosen time. For exact timing, point a real system cron at wp-cron.php.', 'rd-backup' ); ?>
+					</p>
+				</div>
+
+				<?php
+				$notifier     = RDBK_Notifier::instance();
+				$notify_on    = $notifier->notify_on();
+				$email_on     = $notifier->email_enabled();
+				$email_to     = $notifier->email_to();
+				$tg_on        = $notifier->telegram_enabled();
+				$tg_chat      = $notifier->telegram_chat();
+				$has_token    = $notifier->has_telegram_token();
+				$notify_nonce = wp_create_nonce( 'rdbk_notify' );
+				?>
+				<div class="rdbk-card">
+					<h3 class="rdbk-card__title"><?php esc_html_e( 'Notifications', 'rd-backup' ); ?></h3>
+					<p class="rdbk-card__desc">
+						<?php esc_html_e( 'Get notified when an automatic backup finishes. Manual backups are not notified — you see their result on screen.', 'rd-backup' ); ?>
+					</p>
+
+					<p class="rdbk-notify-row">
+						<label for="rdbk-notify-on"><?php esc_html_e( 'Notify on:', 'rd-backup' ); ?></label>
+						<select id="rdbk-notify-on">
+							<option value="failures"<?php selected( 'failures', $notify_on ); ?>><?php esc_html_e( 'Failures only', 'rd-backup' ); ?></option>
+							<option value="all"<?php selected( 'all', $notify_on ); ?>><?php esc_html_e( 'Success and failures', 'rd-backup' ); ?></option>
+						</select>
+					</p>
+
+					<p class="rdbk-notify-row">
+						<label><input type="checkbox" id="rdbk-notify-email"<?php checked( $email_on ); ?>> <?php esc_html_e( 'Email', 'rd-backup' ); ?></label>
+						<input type="email" id="rdbk-notify-email-to" class="regular-text" value="<?php echo esc_attr( $email_to ); ?>" placeholder="you@example.com">
+					</p>
+
+					<p class="rdbk-notify-row">
+						<label><input type="checkbox" id="rdbk-notify-telegram"<?php checked( $tg_on ); ?>> <?php esc_html_e( 'Telegram', 'rd-backup' ); ?></label>
+					</p>
+					<p class="rdbk-notify-row">
+						<label for="rdbk-notify-tg-token"><?php esc_html_e( 'Bot token:', 'rd-backup' ); ?></label>
+						<input type="password" id="rdbk-notify-tg-token" class="regular-text" autocomplete="new-password" placeholder="<?php echo $has_token ? esc_attr__( '•••••• (leave blank to keep)', 'rd-backup' ) : ''; ?>">
+						<label for="rdbk-notify-tg-chat"><?php esc_html_e( 'Chat ID:', 'rd-backup' ); ?></label>
+						<input type="text" id="rdbk-notify-tg-chat" value="<?php echo esc_attr( $tg_chat ); ?>">
+					</p>
+
+					<p class="rdbk-notify-row">
+						<button type="button" class="button button-primary" id="rdbk-notify-save" data-nonce="<?php echo esc_attr( $notify_nonce ); ?>"><?php esc_html_e( 'Save notifications', 'rd-backup' ); ?></button>
+						<button type="button" class="button" id="rdbk-notify-test" data-nonce="<?php echo esc_attr( $notify_nonce ); ?>"><?php esc_html_e( 'Send test', 'rd-backup' ); ?></button>
+						<span id="rdbk-notify-msg" class="rdbk-inline-msg" aria-live="polite"></span>
+					</p>
+					<p class="rdbk-card__hint">
+						<?php esc_html_e( 'Telegram: create a bot with @BotFather, then paste its token and your chat/channel ID. Save before sending a test — the token is stored privately and never shown again.', 'rd-backup' ); ?>
+					</p>
+				</div>
+			</div>
+		</div>
+		<?php
+	}
+
 	private function render_health(): void {
 		?>
 		<div class="rdbk-section-header">
@@ -507,5 +661,25 @@ class RDBK_Admin {
 			?>
 		</div>
 		<?php
+	}
+
+	/**
+	 * AJAX: save the "keep last N" retention setting (the Backup-tab select).
+	 * Validates against the allowed choices before storing the option.
+	 */
+	public function ajax_save_retention(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'rd-backup' ) ), 403 );
+		}
+		check_ajax_referer( 'rdbk_save_retention', 'nonce' );
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified above.
+		$keep = isset( $_POST['keep'] ) ? (int) $_POST['keep'] : 0;
+		if ( ! in_array( $keep, RDBK_Storage::RETENTION_CHOICES, true ) ) {
+			wp_send_json_error( array( 'message' => __( 'Invalid value.', 'rd-backup' ) ), 400 );
+		}
+
+		update_option( RDBK_Storage::RETENTION_OPTION, $keep );
+		wp_send_json_success( array( 'keep' => $keep ) );
 	}
 }
