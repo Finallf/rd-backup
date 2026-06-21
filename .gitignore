@@ -43,6 +43,10 @@ error_log
 staging/
 rd-backup.zip
 
+# === Artefatos de build do SCSS (não distribuir) ===
+# CSS compilado com --no-source-map; o .map é dev-only.
+assets/css/*.map
+
 # === Tooling local (não distribuído) ===
 # WP-CLI binary opcional pra rodar `wp i18n make-pot`, etc. localmente.
 tools/wp-cli.phar

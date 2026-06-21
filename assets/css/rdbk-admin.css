@@ -198,6 +198,27 @@
   color: #50575e;
 }
 
+.rdbk-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+.rdbk-file-input:focus-visible + label {
+  -webkit-box-shadow: 0 0 0 2px #2271b1;
+          box-shadow: 0 0 0 2px #2271b1;
+}
+
+.rdbk-file-name {
+  margin: 0 6px;
+  color: #50575e;
+  font-style: italic;
+}
+
 .rdbk-progress {
   margin-top: 16px;
 }

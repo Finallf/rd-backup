@@ -218,7 +218,8 @@ class RDBK_Updater {
 
 	/**
 	 * Feeds the "View details" modal (plugins_api) with our release info. The
-	 * changelog is rendered as plain text (no Parsedown) — escaped, paragraphed.
+	 * changelog gets a minimal Markdown pass (headings, lists, bold, code, links)
+	 * — no Parsedown dependency, just escaped text with a few inline tags.
 	 *
 	 * @param mixed  $result The default (false) or another plugin's payload.
 	 * @param string $action The plugins_api action.
@@ -248,9 +249,89 @@ class RDBK_Updater {
 			'homepage'      => 'https://github.com/' . self::REPO,
 			'download_link' => $release['download_url'],
 			'sections'      => array(
-				'changelog' => wpautop( esc_html( (string) $release['body'] ) ),
+				'changelog' => $this->format_changelog( (string) $release['body'] ),
 			),
 		);
+	}
+
+	/**
+	 * Converts a release's Markdown body to safe HTML for the changelog modal —
+	 * a deliberately tiny pass (headings, lists, **bold**, `code`, [text](url)),
+	 * NOT a full Markdown parser, to keep the plugin dependency-free.
+	 *
+	 * @param string $md The raw release body (GitHub Markdown).
+	 * @return string Safe HTML.
+	 */
+	private function format_changelog( string $md ): string {
+		$out     = '';
+		$in_list = false;
+
+		foreach ( preg_split( '/\r\n|\r|\n/', $md ) as $raw ) {
+			$line = trim( (string) $raw );
+
+			if ( '' === $line ) {
+				if ( $in_list ) {
+					$out    .= '</ul>';
+					$in_list = false;
+				}
+				continue;
+			}
+
+			// Heading (## … / ### …): ## → h3, ### → h4, capped at h4.
+			if ( preg_match( '/^(#{1,6})\s+(.*)$/', $line, $m ) ) {
+				if ( $in_list ) {
+					$out    .= '</ul>';
+					$in_list = false;
+				}
+				$level = (string) min( strlen( $m[1] ) + 1, 4 );
+				$out  .= '<h' . $level . '>' . $this->inline_md( $m[2] ) . '</h' . $level . '>';
+				continue;
+			}
+
+			// List item (* … / - …).
+			if ( preg_match( '/^[*-]\s+(.*)$/', $line, $m ) ) {
+				if ( ! $in_list ) {
+					$out    .= '<ul>';
+					$in_list = true;
+				}
+				$out .= '<li>' . $this->inline_md( $m[1] ) . '</li>';
+				continue;
+			}
+
+			// Plain paragraph.
+			if ( $in_list ) {
+				$out    .= '</ul>';
+				$in_list = false;
+			}
+			$out .= '<p>' . $this->inline_md( $line ) . '</p>';
+		}
+
+		if ( $in_list ) {
+			$out .= '</ul>';
+		}
+		return $out;
+	}
+
+	/**
+	 * Escapes a line, then re-introduces the few inline elements the changelog
+	 * uses: [text](url) links, **bold** and `code`. Order matters — escape first,
+	 * so the converted tags are the only HTML in the output.
+	 *
+	 * @param string $text One line of Markdown (block markers already stripped).
+	 * @return string Safe HTML.
+	 */
+	private function inline_md( string $text ): string {
+		$text = esc_html( $text );
+		$text = preg_replace_callback(
+			'/\[([^\]]+)\]\(([^)\s]+)\)/',
+			static function ( $m ) {
+				return '<a href="' . esc_url( $m[2] ) . '" target="_blank" rel="noopener">' . $m[1] . '</a>';
+			},
+			$text
+		);
+		$text = preg_replace( '/\*\*([^*]+)\*\*/', '<strong>$1</strong>', (string) $text );
+		$text = preg_replace( '/`([^`]+)`/', '<code>$1</code>', (string) $text );
+		return (string) $text;
 	}
 
 	/**
