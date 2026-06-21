@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.2.0-beta.3](https://github.com/Finallf/rd-backup/compare/v1.2.0-beta.2...v1.2.0-beta.3) (2026-06-21)
+
+### ✨ Features
+
+* **retention:** configurable "keep last N" for user backups ([cdd8c6b](https://github.com/Finallf/rd-backup/commit/cdd8c6b0d21177364902a57f3f4cd83859411f11))
+
+<br>
+
+---
+
 ## [1.2.0-beta.2](https://github.com/Finallf/rd-backup/compare/v1.2.0-beta.1...v1.2.0-beta.2) (2026-06-21)
 
 ### 🐛 Bug Fixes
