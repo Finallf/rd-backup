@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.2.0-beta.2](https://github.com/Finallf/rd-backup/compare/v1.2.0-beta.1...v1.2.0-beta.2) (2026-06-21)
+
+### 🐛 Bug Fixes
+
+* **updater:** clearer "check for updates" failure messages ([9a89fc8](https://github.com/Finallf/rd-backup/commit/9a89fc8933628290240870c2cb1705cfcf06e5b2))
+
+<br>
+
+---
+
 ## [1.2.0-beta.1](https://github.com/Finallf/rd-backup/compare/v1.1.2-beta.1...v1.2.0-beta.1) (2026-06-21)
 
 ### ✨ Features
