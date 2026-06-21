@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.2.0-beta.5](https://github.com/Finallf/rd-backup/compare/v1.2.0-beta.4...v1.2.0-beta.5) (2026-06-21)
+
+### ✨ Features
+
+* **notify:** email + Telegram alerts for automatic backups ([cedff7f](https://github.com/Finallf/rd-backup/commit/cedff7f5fb2ac7615b3a4c231810cb24349fdc3c))
+
+<br>
+
+---
+
 ## [1.2.0-beta.4](https://github.com/Finallf/rd-backup/compare/v1.2.0-beta.3...v1.2.0-beta.4) (2026-06-21)
 
 ### ✨ Features
