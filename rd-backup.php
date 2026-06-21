@@ -81,3 +81,22 @@ function rdbk_get_last_backup(): ?array {
 	$archives = RDBK_Storage::instance()->list_archives( 'user' );
 	return $archives[0] ?? null;
 }
+
+/**
+ * Public API: the last automatic (scheduled) backup run, or null when none ran.
+ *
+ * Returns the scheduler's last-run record (keys: time = timestamp, status =
+ * 'done' | 'error', file = archive name, message = error text on failure) so a
+ * theme or plugin can surface a "last automatic backup OK/failed" indicator
+ * without reaching into internals. Guard the call with
+ * function_exists( 'rdbk_get_last_auto_backup' ) so it degrades gracefully on an
+ * older plugin build.
+ *
+ * @return array|null
+ */
+function rdbk_get_last_auto_backup(): ?array {
+	if ( ! class_exists( 'RDBK_Scheduler' ) ) {
+		return null;
+	}
+	return RDBK_Scheduler::instance()->last_run();
+}
