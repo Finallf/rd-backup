@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.1.2-beta.1](https://github.com/Finallf/rd-backup/compare/v1.1.1...v1.1.2-beta.1) (2026-06-21)
+
+### 🐛 Bug Fixes
+
+* **updater:** drop <br>/--- separators from the changelog modal ([7190191](https://github.com/Finallf/rd-backup/commit/71901912ecb6a251e0eaadcdcd6e8fc9261aa14a))
+
+<br>
+
+---
+
 ## [1.1.1](https://github.com/Finallf/rd-backup/compare/v1.1.0...v1.1.1) (2026-06-21)
 
 ### 🐛 Bug Fixes
