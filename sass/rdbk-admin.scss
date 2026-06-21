@@ -91,6 +91,19 @@ $rdbk-bg-strip:       #f6f7f7; // gray strips / placeholder bg
 	}
 }
 
+// Schedule row (Schedule tab): frequency + time + save, wraps on narrow widths.
+.rdbk-schedule-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 12px;
+
+	label {
+		font-weight: 600;
+	}
+}
+
 // ── Section header (dashicon + title) ────────────────────────────────────────
 .rdbk-section-header {
 	display: flex;

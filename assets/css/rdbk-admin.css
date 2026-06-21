@@ -70,6 +70,22 @@
   font-weight: 600;
 }
 
+.rdbk-schedule-row {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+.rdbk-schedule-row label {
+  font-weight: 600;
+}
+
 .rdbk-section-header {
   display: -webkit-box;
   display: -ms-flexbox;

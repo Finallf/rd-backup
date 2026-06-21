@@ -659,6 +659,43 @@
 		} );
 	}
 
+	// --- Schedule tab: save frequency + time, re-arm the cron ---
+	var scheduleSave = document.getElementById( 'rdbk-schedule-save' );
+	if ( scheduleSave ) {
+		scheduleSave.addEventListener( 'click', function () {
+			var freq = document.getElementById( 'rdbk-schedule-freq' );
+			var time = document.getElementById( 'rdbk-schedule-time' );
+			var msg  = document.getElementById( 'rdbk-schedule-msg' );
+			var next = document.getElementById( 'rdbk-schedule-next' );
+			if ( msg ) {
+				msg.textContent = '';
+			}
+			var body = new FormData();
+			body.append( 'action', 'rdbk_save_schedule' );
+			body.append( 'nonce', scheduleSave.getAttribute( 'data-nonce' ) );
+			body.append( 'freq', freq ? freq.value : 'off' );
+			body.append( 'time', time ? time.value : '' );
+			fetch( cfg.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: body } ).then( function ( r ) {
+				return r.json();
+			} ).then( function ( res ) {
+				if ( res && res.success ) {
+					if ( msg ) {
+						msg.textContent = i18n.saved || 'Saved.';
+					}
+					if ( next && res.data ) {
+						next.textContent = res.data.next || '—';
+					}
+				} else if ( msg ) {
+					msg.textContent = i18n.failed || 'Failed.';
+				}
+			} ).catch( function () {
+				if ( msg ) {
+					msg.textContent = i18n.failed || 'Failed.';
+				}
+			} );
+		} );
+	}
+
 	if ( betaSwitch ) {
 		betaSwitch.addEventListener( 'click', function () {
 			if ( betaSwitch.classList.contains( 'is-loading' ) ) {

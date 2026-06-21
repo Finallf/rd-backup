@@ -34,6 +34,9 @@ class RDBK_Plugin {
 		// Self-updater: hooks the plugin-update transient, which is also checked in
 		// cron (non-admin), so it loads unconditionally.
 		RDBK_Updater::instance();
+		// Scheduler: registers the WP-Cron hooks that run automatic backups —
+		// these fire in the non-admin cron context, so it loads unconditionally.
+		RDBK_Scheduler::instance();
 
 		if ( is_admin() ) {
 			RDBK_Admin::instance();

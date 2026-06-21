@@ -39,6 +39,7 @@ require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-uploads-extract.php';
 require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-search-replace.php';
 require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-restore.php';
 require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-healthcheck.php';
+require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-scheduler.php';
 require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-admin.php';
 require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-updater.php';
 require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-plugin.php';
@@ -46,6 +47,7 @@ require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-plugin.php';
 add_action( 'plugins_loaded', array( 'RDBK_Plugin', 'instance' ) );
 register_activation_hook( __FILE__, array( 'RDBK_Storage', 'on_activation' ) );
 register_deactivation_hook( __FILE__, array( 'RDBK_Storage', 'on_deactivation' ) );
+register_deactivation_hook( __FILE__, array( 'RDBK_Scheduler', 'on_deactivation' ) );
 
 /*
  * Load the plugin's translations from /languages. Hooked on init (not

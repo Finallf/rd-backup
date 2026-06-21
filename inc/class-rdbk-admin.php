@@ -128,9 +128,10 @@ class RDBK_Admin {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only tab switch in the admin UI, no form is processed.
 		$active = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'backup';
 		$tabs   = array(
-			'backup'  => __( 'Backup', 'rd-backup' ),
-			'restore' => __( 'Restore', 'rd-backup' ),
-			'health'  => __( 'Health', 'rd-backup' ),
+			'backup'   => __( 'Backup', 'rd-backup' ),
+			'restore'  => __( 'Restore', 'rd-backup' ),
+			'schedule' => __( 'Schedule', 'rd-backup' ),
+			'health'   => __( 'Health', 'rd-backup' ),
 		);
 		if ( ! isset( $tabs[ $active ] ) ) {
 			$active = 'backup';
@@ -176,6 +177,9 @@ class RDBK_Admin {
 				break;
 			case 'restore':
 				$this->render_restore();
+				break;
+			case 'schedule':
+				$this->render_schedule();
 				break;
 			default:
 				$this->render_backup();
@@ -396,6 +400,82 @@ class RDBK_Admin {
 		</div>
 
 		<div id="rdbk-preview" class="rdbk-preview" hidden></div>
+		<?php
+	}
+
+	private function render_schedule(): void {
+		$scheduler = RDBK_Scheduler::instance();
+		$freq      = $scheduler->freq();
+		$time      = $scheduler->time_of_day();
+		$next      = $scheduler->next_scheduled();
+		$last      = $scheduler->last_run();
+
+		$freq_labels = array(
+			'off'     => __( 'Off', 'rd-backup' ),
+			'daily'   => __( 'Daily', 'rd-backup' ),
+			'weekly'  => __( 'Weekly', 'rd-backup' ),
+			'monthly' => __( 'Monthly', 'rd-backup' ),
+		);
+		?>
+		<div class="rdbk-section-header">
+			<span class="dashicons dashicons-clock" aria-hidden="true"></span>
+			<h2><?php esc_html_e( 'Schedule', 'rd-backup' ); ?></h2>
+		</div>
+		<div class="rdbk-pdash">
+			<div class="rdbk-pgrid">
+				<div class="rdbk-card">
+					<h3 class="rdbk-card__title"><?php esc_html_e( 'Automatic backups', 'rd-backup' ); ?></h3>
+					<p class="rdbk-card__desc">
+						<?php esc_html_e( 'Run a full backup automatically on a schedule. Automatic backups follow the same "keep last N" retention as manual ones (set in the Backup tab) and do not take a safety snapshot.', 'rd-backup' ); ?>
+					</p>
+
+					<p class="rdbk-schedule-row">
+						<label for="rdbk-schedule-freq"><?php esc_html_e( 'Frequency:', 'rd-backup' ); ?></label>
+						<select id="rdbk-schedule-freq">
+							<?php
+							foreach ( $freq_labels as $value => $label ) {
+								printf(
+									'<option value="%1$s"%2$s>%3$s</option>',
+									esc_attr( $value ),
+									selected( $value, $freq, false ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- selected() returns a fixed, safe attribute string.
+									esc_html( $label )
+								);
+							}
+							?>
+						</select>
+						<label for="rdbk-schedule-time"><?php esc_html_e( 'at', 'rd-backup' ); ?></label>
+						<input type="time" id="rdbk-schedule-time" value="<?php echo esc_attr( $time ); ?>">
+						<button type="button" class="button button-primary" id="rdbk-schedule-save" data-nonce="<?php echo esc_attr( wp_create_nonce( 'rdbk_save_schedule' ) ); ?>"><?php esc_html_e( 'Save schedule', 'rd-backup' ); ?></button>
+						<span id="rdbk-schedule-msg" class="rdbk-inline-msg" aria-live="polite"></span>
+					</p>
+
+					<p>
+						<strong><?php esc_html_e( 'Next backup:', 'rd-backup' ); ?></strong>
+						<span id="rdbk-schedule-next"><?php echo $next ? esc_html( wp_date( 'Y-m-d H:i', $next ) ) : esc_html__( '—', 'rd-backup' ); ?></span>
+					</p>
+					<p>
+						<strong><?php esc_html_e( 'Last automatic backup:', 'rd-backup' ); ?></strong>
+						<?php
+						if ( is_array( $last ) ) {
+							$ok = 'done' === ( $last['status'] ?? '' );
+							printf(
+								'<span class="rdbk-badge rdbk-badge--%1$s">%2$s</span> %3$s',
+								esc_attr( $ok ? 'ok' : 'fail' ),
+								$ok ? esc_html__( 'OK', 'rd-backup' ) : esc_html__( 'Failed', 'rd-backup' ),
+								esc_html( wp_date( 'Y-m-d H:i', (int) $last['time'] ) )
+							);
+						} else {
+							echo esc_html__( '—', 'rd-backup' );
+						}
+						?>
+					</p>
+
+					<p class="rdbk-card__hint">
+						<?php esc_html_e( 'WordPress runs scheduled tasks when the site gets traffic, so on a quiet site a backup may run a little after the chosen time. For exact timing, point a real system cron at wp-cron.php.', 'rd-backup' ); ?>
+					</p>
+				</div>
+			</div>
+		</div>
 		<?php
 	}
 
