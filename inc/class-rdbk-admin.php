@@ -115,6 +115,9 @@ class RDBK_Admin {
 					'viewRelease'      => __( 'View release on GitHub', 'rd-backup' ),
 					'justNow'          => __( 'just now', 'rd-backup' ),
 					'saved'            => __( 'Saved.', 'rd-backup' ),
+					'testing'          => __( 'Sending…', 'rd-backup' ),
+					'testOk'           => __( 'Test sent.', 'rd-backup' ),
+					'testFail'         => __( 'Test failed for a channel — check the settings.', 'rd-backup' ),
 				),
 			)
 		);
@@ -472,6 +475,55 @@ class RDBK_Admin {
 
 					<p class="rdbk-card__hint">
 						<?php esc_html_e( 'WordPress runs scheduled tasks when the site gets traffic, so on a quiet site a backup may run a little after the chosen time. For exact timing, point a real system cron at wp-cron.php.', 'rd-backup' ); ?>
+					</p>
+				</div>
+
+				<?php
+				$notifier     = RDBK_Notifier::instance();
+				$notify_on    = $notifier->notify_on();
+				$email_on     = $notifier->email_enabled();
+				$email_to     = $notifier->email_to();
+				$tg_on        = $notifier->telegram_enabled();
+				$tg_chat      = $notifier->telegram_chat();
+				$has_token    = $notifier->has_telegram_token();
+				$notify_nonce = wp_create_nonce( 'rdbk_notify' );
+				?>
+				<div class="rdbk-card">
+					<h3 class="rdbk-card__title"><?php esc_html_e( 'Notifications', 'rd-backup' ); ?></h3>
+					<p class="rdbk-card__desc">
+						<?php esc_html_e( 'Get notified when an automatic backup finishes. Manual backups are not notified — you see their result on screen.', 'rd-backup' ); ?>
+					</p>
+
+					<p class="rdbk-notify-row">
+						<label for="rdbk-notify-on"><?php esc_html_e( 'Notify on:', 'rd-backup' ); ?></label>
+						<select id="rdbk-notify-on">
+							<option value="failures"<?php selected( 'failures', $notify_on ); ?>><?php esc_html_e( 'Failures only', 'rd-backup' ); ?></option>
+							<option value="all"<?php selected( 'all', $notify_on ); ?>><?php esc_html_e( 'Success and failures', 'rd-backup' ); ?></option>
+						</select>
+					</p>
+
+					<p class="rdbk-notify-row">
+						<label><input type="checkbox" id="rdbk-notify-email"<?php checked( $email_on ); ?>> <?php esc_html_e( 'Email', 'rd-backup' ); ?></label>
+						<input type="email" id="rdbk-notify-email-to" class="regular-text" value="<?php echo esc_attr( $email_to ); ?>" placeholder="you@example.com">
+					</p>
+
+					<p class="rdbk-notify-row">
+						<label><input type="checkbox" id="rdbk-notify-telegram"<?php checked( $tg_on ); ?>> <?php esc_html_e( 'Telegram', 'rd-backup' ); ?></label>
+					</p>
+					<p class="rdbk-notify-row">
+						<label for="rdbk-notify-tg-token"><?php esc_html_e( 'Bot token:', 'rd-backup' ); ?></label>
+						<input type="password" id="rdbk-notify-tg-token" class="regular-text" autocomplete="new-password" placeholder="<?php echo $has_token ? esc_attr__( '•••••• (leave blank to keep)', 'rd-backup' ) : ''; ?>">
+						<label for="rdbk-notify-tg-chat"><?php esc_html_e( 'Chat ID:', 'rd-backup' ); ?></label>
+						<input type="text" id="rdbk-notify-tg-chat" value="<?php echo esc_attr( $tg_chat ); ?>">
+					</p>
+
+					<p class="rdbk-notify-row">
+						<button type="button" class="button button-primary" id="rdbk-notify-save" data-nonce="<?php echo esc_attr( $notify_nonce ); ?>"><?php esc_html_e( 'Save notifications', 'rd-backup' ); ?></button>
+						<button type="button" class="button" id="rdbk-notify-test" data-nonce="<?php echo esc_attr( $notify_nonce ); ?>"><?php esc_html_e( 'Send test', 'rd-backup' ); ?></button>
+						<span id="rdbk-notify-msg" class="rdbk-inline-msg" aria-live="polite"></span>
+					</p>
+					<p class="rdbk-card__hint">
+						<?php esc_html_e( 'Telegram: create a bot with @BotFather, then paste its token and your chat/channel ID. Save before sending a test — the token is stored privately and never shown again.', 'rd-backup' ); ?>
 					</p>
 				</div>
 			</div>

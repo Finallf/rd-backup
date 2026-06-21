@@ -104,6 +104,21 @@ $rdbk-bg-strip:       #f6f7f7; // gray strips / placeholder bg
 	}
 }
 
+// Notification settings rows (Schedule tab): label + field(s), wrap on narrow.
+.rdbk-notify-row {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 10px;
+
+	// The channel toggles carry their own checkbox + text, so only style the
+	// standalone field labels (Notify on / Bot token / Chat ID) as bold.
+	> label[for] {
+		font-weight: 600;
+	}
+}
+
 // ── Section header (dashicon + title) ────────────────────────────────────────
 .rdbk-section-header {
 	display: flex;

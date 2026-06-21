@@ -40,6 +40,7 @@ require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-search-replace.php';
 require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-restore.php';
 require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-healthcheck.php';
 require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-scheduler.php';
+require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-notifier.php';
 require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-admin.php';
 require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-updater.php';
 require_once RDBK_PLUGIN_DIR . 'inc/class-rdbk-plugin.php';

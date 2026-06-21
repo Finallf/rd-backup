@@ -696,6 +696,78 @@
 		} );
 	}
 
+	// --- Schedule tab: notification settings (save + test) ---
+	var notifySave = document.getElementById( 'rdbk-notify-save' );
+	var notifyTest = document.getElementById( 'rdbk-notify-test' );
+	var notifyMsg  = document.getElementById( 'rdbk-notify-msg' );
+
+	function notifyBody( action, nonce ) {
+		var body = new FormData();
+		body.append( 'action', action );
+		body.append( 'nonce', nonce );
+		var on      = document.getElementById( 'rdbk-notify-on' );
+		var emailOn = document.getElementById( 'rdbk-notify-email' );
+		var emailTo = document.getElementById( 'rdbk-notify-email-to' );
+		var tgOn    = document.getElementById( 'rdbk-notify-telegram' );
+		var tgToken = document.getElementById( 'rdbk-notify-tg-token' );
+		var tgChat  = document.getElementById( 'rdbk-notify-tg-chat' );
+		body.append( 'on', on ? on.value : 'failures' );
+		body.append( 'email_on', ( emailOn && emailOn.checked ) ? '1' : '0' );
+		body.append( 'email_to', emailTo ? emailTo.value : '' );
+		body.append( 'telegram_on', ( tgOn && tgOn.checked ) ? '1' : '0' );
+		body.append( 'telegram_token', tgToken ? tgToken.value : '' );
+		body.append( 'telegram_chat', tgChat ? tgChat.value : '' );
+		return body;
+	}
+
+	if ( notifySave ) {
+		notifySave.addEventListener( 'click', function () {
+			if ( notifyMsg ) {
+				notifyMsg.textContent = '';
+			}
+			fetch( cfg.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: notifyBody( 'rdbk_save_notify', notifySave.getAttribute( 'data-nonce' ) ) } ).then( function ( r ) {
+				return r.json();
+			} ).then( function ( res ) {
+				if ( notifyMsg ) {
+					notifyMsg.textContent = ( res && res.success ) ? ( i18n.saved || 'Saved.' ) : ( i18n.failed || 'Failed.' );
+				}
+				// The token is stored server-side now; clear the field (renders blank).
+				var tgToken = document.getElementById( 'rdbk-notify-tg-token' );
+				if ( res && res.success && tgToken ) {
+					tgToken.value = '';
+				}
+			} ).catch( function () {
+				if ( notifyMsg ) {
+					notifyMsg.textContent = i18n.failed || 'Failed.';
+				}
+			} );
+		} );
+	}
+
+	if ( notifyTest ) {
+		notifyTest.addEventListener( 'click', function () {
+			if ( notifyMsg ) {
+				notifyMsg.textContent = i18n.testing || 'Sending…';
+			}
+			fetch( cfg.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: notifyBody( 'rdbk_test_notify', notifyTest.getAttribute( 'data-nonce' ) ) } ).then( function ( r ) {
+				return r.json();
+			} ).then( function ( res ) {
+				if ( ! notifyMsg ) {
+					return;
+				}
+				if ( res && res.success ) {
+					notifyMsg.textContent = ( res.data && res.data.ok ) ? ( i18n.testOk || 'Test sent.' ) : ( i18n.testFail || 'Test failed for a channel — check the settings.' );
+				} else {
+					notifyMsg.textContent = ( res && res.data && res.data.message ) || ( i18n.failed || 'Failed.' );
+				}
+			} ).catch( function () {
+				if ( notifyMsg ) {
+					notifyMsg.textContent = i18n.failed || 'Failed.';
+				}
+			} );
+		} );
+	}
+
 	if ( betaSwitch ) {
 		betaSwitch.addEventListener( 'click', function () {
 			if ( betaSwitch.classList.contains( 'is-loading' ) ) {

@@ -226,17 +226,24 @@ class RDBK_Scheduler {
 	 * Stores the outcome of the last automatic run for the Schedule tab.
 	 */
 	private function record_result( RDBK_Job $job ): void {
-		$status = (string) $job->get( 'status' );
-		$stats  = (array) $job->get( 'stats', array() );
+		$status  = (string) $job->get( 'status' );
+		$stats   = (array) $job->get( 'stats', array() );
+		$file    = (string) ( $stats['file'] ?? '' );
+		$size    = (string) ( $stats['sizeh'] ?? '' );
+		$message = 'error' === $status ? (string) $job->get( 'error', '' ) : '';
+
 		update_option(
 			self::LAST_OPTION,
 			array(
 				'time'    => time(),
 				'status'  => $status,
-				'file'    => (string) ( $stats['file'] ?? '' ),
-				'message' => 'error' === $status ? (string) $job->get( 'error', '' ) : '',
+				'file'    => $file,
+				'message' => $message,
 			)
 		);
+
+		// Notify the configured channels (best-effort; never affects the backup).
+		RDBK_Notifier::instance()->notify_backup_result( $status, $file, $size, $message );
 	}
 
 	/* ---- AJAX ----------------------------------------------------------- */
