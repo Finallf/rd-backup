@@ -48,14 +48,14 @@ Backups live in `wp-content/rd-backup/` — **outside** the plugin (survives plu
 
 1. **db** — `RDBK_DB_Dump` writes `database.sql` (`SHOW CREATE TABLE` + batched `INSERT`s; values escaped with `mysqli_real_escape_string`; transients skipped).
 2. **uploads** — `RDBK_Archiver` appends `wp-content/uploads` into the zip (stored, not recompressed — they're already compressed).
-3. **finalize** — adds the `.sql` (deflated) and `manifest.json`, then moves the zip into the store.
+3. **finalize** — adds the `.sql` (deflated) and `manifest.json`, moves the zip into the store, then **self-verifies** it: the published archive is re-opened and its `database.sql` re-hashed against the manifest. A mismatch deletes the bad zip and fails the job — a corrupt write is caught at creation, not on the day you need the backup.
 
 ## Restore pipeline
 
-`RDBK_Restore` validates the archive (manifest + SHA-256), then applies it in phases:
+`RDBK_Restore` validates the archive (manifest + SHA-256). The hash is **re-checked server-side when the restore starts**, so a failed integrity check aborts before anything is written. Then it applies in phases:
 
 1. **import** — `RDBK_DB_Import` extracts `database.sql` and executes it statement by statement (resumable by byte offset; best-effort, so one bad statement doesn't abort the run).
 2. **replace** — `RDBK_Search_Replace` swaps the origin URL for this site's URL across every table, **serialized-safe** (unserialize → replace → re-serialize, so length prefixes stay valid). Runs only when the domain differs.
-3. **uploads** — `RDBK_Uploads_Extract` streams `uploads/` back into place.
+3. **uploads** — `RDBK_Uploads_Extract` **mirrors** `uploads/`: it streams the archived files back (overwriting on collision), then prunes any file under `wp-content/uploads` not in the backup, so the folder matches the backup exactly (scoped to the uploads dir, resumable).
 
-A full **safety snapshot** is taken before any restore, with a retention of the last 2.
+A full **safety snapshot** is taken before any restore, with a retention of the last 2 — it's the undo for everything a restore overwrites or prunes.

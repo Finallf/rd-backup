@@ -269,7 +269,12 @@ class RDBK_Updater {
 		foreach ( preg_split( '/\r\n|\r|\n/', $md ) as $raw ) {
 			$line = trim( (string) $raw );
 
-			if ( '' === $line ) {
+			// Skip blanks AND standalone separators (--- / *** / ___ / <br>) —
+			// semantic-release sprinkles these between version sections, but the
+			// headings already separate things, so they'd just be noise here.
+			if ( '' === $line
+				|| (bool) preg_match( '/^(?:-{3,}|\*{3,}|_{3,})$/', $line )
+				|| (bool) preg_match( '#^<br\s*/?>$#i', $line ) ) {
 				if ( $in_list ) {
 					$out    .= '</ul>';
 					$in_list = false;
@@ -322,6 +327,8 @@ class RDBK_Updater {
 	 */
 	private function inline_md( string $text ): string {
 		$text = esc_html( $text );
+		// An inline <br> (escaped to &lt;br&gt; above) → a real line break.
+		$text = (string) preg_replace( '#&lt;br\s*/?&gt;#i', '<br>', $text );
 		$text = preg_replace_callback(
 			'/\[([^\]]+)\]\(([^)\s]+)\)/',
 			static function ( $m ) {
