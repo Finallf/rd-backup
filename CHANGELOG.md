@@ -7,6 +7,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.2.0](https://github.com/Finallf/rd-backup/compare/v1.1.1...v1.2.0) (2026-06-21)
+
+### ✨ Features
+
+* **api:** expose the last automatic backup result ([82d6ac4](https://github.com/Finallf/rd-backup/commit/82d6ac42aaf20853eb9733ef556f2d6b12062da5))
+* **notify:** email + Telegram alerts for automatic backups ([cedff7f](https://github.com/Finallf/rd-backup/commit/cedff7f5fb2ac7615b3a4c231810cb24349fdc3c))
+* **restore:** side-by-side preview cards; drop the sign-out warning ([9964f01](https://github.com/Finallf/rd-backup/commit/9964f01d1dc9f9ad9e0188ece12b6f9ec8bcf18a))
+* **retention:** configurable "keep last N" for user backups ([cdd8c6b](https://github.com/Finallf/rd-backup/commit/cdd8c6b0d21177364902a57f3f4cd83859411f11))
+* **schedule:** automatic backups on a cron schedule ([e4a8d2e](https://github.com/Finallf/rd-backup/commit/e4a8d2e6301ffcf8685f92563741d43910d40e59))
+
+### 🐛 Bug Fixes
+
+* **updater:** clearer "check for updates" failure messages ([9a89fc8](https://github.com/Finallf/rd-backup/commit/9a89fc8933628290240870c2cb1705cfcf06e5b2))
+* **updater:** drop <br>/--- separators from the changelog modal ([7190191](https://github.com/Finallf/rd-backup/commit/71901912ecb6a251e0eaadcdcd6e8fc9261aa14a))
+
+<br>
+
+---
+
 ## [1.2.0-beta.5](https://github.com/Finallf/rd-backup/compare/v1.2.0-beta.4...v1.2.0-beta.5) (2026-06-21)
 
 ### ✨ Features
