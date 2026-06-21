@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.2.0-beta.1](https://github.com/Finallf/rd-backup/compare/v1.1.2-beta.1...v1.2.0-beta.1) (2026-06-21)
+
+### ✨ Features
+
+* **restore:** side-by-side preview cards; drop the sign-out warning ([9964f01](https://github.com/Finallf/rd-backup/commit/9964f01d1dc9f9ad9e0188ece12b6f9ec8bcf18a))
+
+<br>
+
+---
+
 ## [1.1.2-beta.1](https://github.com/Finallf/rd-backup/compare/v1.1.1...v1.1.2-beta.1) (2026-06-21)
 
 ### 🐛 Bug Fixes

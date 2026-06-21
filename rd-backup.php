@@ -3,7 +3,7 @@
  * Plugin Name: ReloadeD Backup
  * Plugin URI: https://github.com/Finallf/rd-backup
  * Description: Complete, portable WordPress backup & restore — a full database dump plus the uploads folder in a single .zip, restorable on any host. Pairs with the ReloadeD theme but runs standalone with any theme.
- * Version: 1.1.2-beta.1
+ * Version: 1.2.0-beta.1
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * Author: Regis Vieira Delgado
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'RDBK_VERSION', '1.1.2-beta.1' );
+define( 'RDBK_VERSION', '1.2.0-beta.1' );
 define( 'RDBK_PLUGIN_FILE', __FILE__ );
 define( 'RDBK_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'RDBK_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
