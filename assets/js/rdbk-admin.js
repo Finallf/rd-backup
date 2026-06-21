@@ -474,8 +474,16 @@
 	var uploadProgress = document.getElementById( 'rdbk-upload-progress' );
 	var uploadBar = document.getElementById( 'rdbk-upload-bar' );
 	var uploadStatus = document.getElementById( 'rdbk-upload-status' );
+	var uploadName = document.getElementById( 'rdbk-upload-name' );
 
 	if ( uploadBtn && uploadInput ) {
+		// Reflect the picked filename next to the styled "Choose .zip" label.
+		uploadInput.addEventListener( 'change', function () {
+			var f = uploadInput.files && uploadInput.files[ 0 ];
+			if ( uploadName ) {
+				uploadName.textContent = f ? f.name : ( i18n.uploadNoFile || 'No file chosen' );
+			}
+		} );
 		uploadBtn.addEventListener( 'click', function () {
 			var file = uploadInput.files && uploadInput.files[ 0 ];
 			if ( ! file ) {

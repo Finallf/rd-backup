@@ -242,6 +242,30 @@ $rdbk-bg-strip:       #f6f7f7; // gray strips / placeholder bg
 	color: $rdbk-text-secondary;
 }
 
+// File picker — hide the native input; a styled <label class="button"> opens it,
+// with the chosen filename shown alongside (so it blends with the panel buttons
+// instead of the browser's default "Choose file" control).
+.rdbk-file-input {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	border: 0;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+
+	&:focus-visible + label {
+		box-shadow: 0 0 0 2px $rdbk-blue;
+	}
+}
+
+.rdbk-file-name {
+	margin: 0 6px;
+	color: $rdbk-text-secondary;
+	font-style: italic;
+}
+
 // ── Progress bar ─────────────────────────────────────────────────────────────
 .rdbk-progress {
 	margin-top: 16px;

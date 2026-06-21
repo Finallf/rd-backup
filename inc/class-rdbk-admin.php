@@ -107,6 +107,7 @@ class RDBK_Admin {
 					'resetDone'        => __( 'Job state cleared.', 'rd-backup' ),
 					'uploadPick'       => __( 'Choose a .zip first.', 'rd-backup' ),
 					'uploadZipOnly'    => __( 'Only .zip backups can be uploaded.', 'rd-backup' ),
+					'uploadNoFile'     => __( 'No file chosen', 'rd-backup' ),
 					'uploading'        => __( 'Uploading…', 'rd-backup' ),
 					'uploadDone'       => __( 'Uploaded — refreshing…', 'rd-backup' ),
 					'updateNow'        => __( 'Update now', 'rd-backup' ),
@@ -295,8 +296,10 @@ class RDBK_Admin {
 						);
 						?>
 					</p>
-					<p>
-						<input type="file" id="rdbk-upload-file" accept=".zip">
+					<p class="rdbk-upload-row">
+						<input type="file" id="rdbk-upload-file" class="rdbk-file-input" accept=".zip">
+						<label for="rdbk-upload-file" class="button"><?php esc_html_e( 'Choose .zip', 'rd-backup' ); ?></label>
+						<span id="rdbk-upload-name" class="rdbk-file-name"><?php esc_html_e( 'No file chosen', 'rd-backup' ); ?></span>
 						<button type="button" class="button" id="rdbk-upload-btn"><?php esc_html_e( 'Upload', 'rd-backup' ); ?></button>
 						<span id="rdbk-upload-msg" class="rdbk-inline-msg" aria-live="polite"></span>
 					</p>
