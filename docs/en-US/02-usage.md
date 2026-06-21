@@ -14,7 +14,7 @@ Everything lives under **Tools → ReloadeD Backup**, split into tabs.
 - **Restore from a backup** — pick an archive and click **Preview**: it validates the manifest, checks the integrity hash, and shows compatibility warnings (origin domain, PHP/WP version, Redis drop-in). Nothing is written. **A failed integrity check blocks the restore** — a corrupt or tampered archive cannot be restored.
   - To apply it, type `RESTORE` to confirm. The plugin first takes a **safety snapshot** of the current site, then imports the database, runs a domain-safe search-replace (only when the origin domain differs), and **mirrors** the uploads — it writes the backup's files and removes any file under `wp-content/uploads` that isn't in the backup, so the folder ends up an exact copy. The safety snapshot covers anything removed.
 
-> ⚠️ A restore overwrites the current database — it replaces the users table, so **you are signed out when it finishes**. Just log back in. The safety snapshot is your undo.
+> ⚠️ A restore overwrites the current database. The safety snapshot taken right before it is your undo. (Restoring onto the same domain keeps you logged in; restoring onto a different domain may sign you out — just log back in.)
 
 - **Safety snapshots** — full backups taken automatically right before each restore (the last 2 are kept). Restore one to undo your last restore.
 

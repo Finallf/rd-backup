@@ -67,6 +67,18 @@ $rdbk-bg-strip:       #f6f7f7; // gray strips / placeholder bg
 	grid-template-columns: 1fr;
 }
 
+// Restore preview: the backup summary card and the restore-apply (or
+// integrity-blocked) card sit side by side. Tops aligned; stacks to one
+// column on narrow screens.
+.rdbk-pgrid--preview {
+	grid-template-columns: 1fr 1fr;
+	align-items: start;
+
+	@media (max-width: 960px) {
+		grid-template-columns: 1fr;
+	}
+}
+
 // ── Section header (dashicon + title) ────────────────────────────────────────
 .rdbk-section-header {
 	display: flex;

@@ -247,7 +247,7 @@
 			( up.files || 0 ) + ' files (' + fmtBytes( up.bytes || 0 ) + ')';
 
 		previewBox.innerHTML =
-			'<div class="rdbk-pgrid">' +
+			'<div class="rdbk-pgrid rdbk-pgrid--preview">' +
 			'<div class="rdbk-card">' +
 			'<p class="rdbk-card__desc"><code>' + esc( d.file || '' ) + '</code></p>' +
 			'<table class="widefat striped"><tbody>' +
@@ -267,7 +267,7 @@
 	function restoreControlsHtml() {
 		return '<div class="rdbk-card rdbk-card--danger rdbk-restore-apply">' +
 			'<div class="rdbk-status rdbk-status--warning"><strong>' + esc( i18n.restoreWarnTitle || 'Heads up:' ) + '</strong> ' +
-			esc( i18n.restoreWarn || 'This overwrites the current database. A full safety backup is taken first. You will be signed out when it finishes (the restore replaces the users table) — just log back in.' ) + '</div>' +
+			esc( i18n.restoreWarn || 'This overwrites the current database. A full safety backup is taken first.' ) + '</div>' +
 			'<p><label>' + esc( i18n.typeRestore || 'Type RESTORE to confirm:' ) +
 			' <input type="text" id="rdbk-restore-confirm" autocomplete="off" spellcheck="false"></label> ' +
 			'<button type="button" class="button rdbk-danger" id="rdbk-restore-go" disabled>' +
