@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 <br>
 
 
+## [1.2.1](https://github.com/Finallf/rd-backup/compare/v1.2.0...v1.2.1) (2026-06-22)
+
+### 🐛 Bug Fixes
+
+* **admin:** tolerate a null hook in the enqueue callback ([8c98a9c](https://github.com/Finallf/rd-backup/commit/8c98a9c95a3be872aba0929db3638ca94d14ad66))
+
+<br>
+
+---
+
 ## [1.2.1-beta.1](https://github.com/Finallf/rd-backup/compare/v1.2.0...v1.2.1-beta.1) (2026-06-22)
 
 ### 🐛 Bug Fixes
