@@ -47,7 +47,10 @@ class RDBK_Admin {
 		);
 	}
 
-	public function enqueue( string $hook ): void {
+	public function enqueue( ?string $hook ): void {
+		// Nullable: WP fires admin_enqueue_scripts with a null hook suffix in some
+		// screenless contexts (iframe / admin-post pages), and a strict `string`
+		// typehint would fatal there. We only act on our own page anyway.
 		if ( self::HOOK !== $hook ) {
 			return;
 		}
